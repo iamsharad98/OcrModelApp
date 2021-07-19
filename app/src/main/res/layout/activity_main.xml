@@ -52,6 +52,26 @@
         android:layout_toRightOf="@+id/select_image"
         android:layout_marginLeft="30dp"
         />
+    <TextView
+        android:id="@+id/inputImageTimeText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/select_image"
+        android:textSize="16sp"
+        android:textColor="#000000"
+        android:textAlignment="center"
+        android:layout_marginTop="20dp"
+        />
+    <TextView
+        android:id="@+id/outputImageTimeText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/inputImageTimeText"
+        android:textSize="16sp"
+        android:textColor="#000000"
+        android:textAlignment="center"
+        android:layout_marginTop="20dp"
+        />
 
 
 </RelativeLayout>

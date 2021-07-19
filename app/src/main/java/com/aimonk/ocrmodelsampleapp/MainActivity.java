@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.nfc.Tag;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -39,11 +40,13 @@ import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener
@@ -53,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private ImageView imgView;
     private Button select, predict;
-    private TextView tv;
+    private TextView tv, inputImageTimeText, outputImageTimeText;
     private Bitmap img;
     private String TAG = "MainActivity";
     private Spinner dropdown;
@@ -69,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         tv = (TextView) findViewById(R.id.fetchedText);
         select = (Button) findViewById(R.id.select_image);
         predict = (Button) findViewById(R.id.predict);
+        inputImageTimeText = findViewById(R.id.inputImageTimeText);
+        outputImageTimeText = findViewById(R.id.outputImageTimeText);
 
         dropdown = findViewById(R.id.spinner);
         String[] items = new String[]{"Float16_320_320", "Float16_480_320", "Float16_480_480", "Float16_640_480",
@@ -91,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
-                predictText();
+                new AsyncPredictData(mContext).execute();
             }
         });
     }
@@ -100,72 +105,72 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Log.d(TAG, "predictText: Position Selected " + positionSelected);
         switch (positionSelected) {
             case 0:
-                Toast.makeText(mContext, "Float 16 - 320*320 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 16 - 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-320*320";
                 model16_320_320();
                 break;
             case 1:
-                Toast.makeText(mContext, "Float 16 - 480*320 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 16 - 480*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*320";
                 model16_480_320();
                 break;
             case 2:
-                Toast.makeText(mContext, "Float 16 - 480*480 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 16 - 480*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*480";
                 model16_480_480();
 
                 break;
             case 3:
-                Toast.makeText(mContext, "Float 16 - 640*480 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 16 - 640*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-640*480";
                 model16_640_480();
                 break;
             case 4:
-                Toast.makeText(mContext, "Float 16 - 640*640 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 16 - 640*640 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-640*640";
                 model16_640_640();
                 break;
             case 5:
-                Toast.makeText(mContext, "Float 16 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 16 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-1280*800";
                 model16_1280_800();
                 break;
             case 6:
-                Toast.makeText(mContext, "Float 32 - 320*320 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 32 - 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-320*320";
                 model32_320_320();
 
                 break;
             case 7:
-                Toast.makeText(mContext, "Float 32 - 480*320 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 32 - 480*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-480*320";
                 model32_480_320();
                 // Whatever you want to happen when the third item gets selected
                 break;
             case 8:
-                Toast.makeText(mContext, "Float 32 - 480*480 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 32 - 480*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-480*480";
                 model32_480_480();
                 break;
             case 9:
-                Toast.makeText(mContext, "Float 32 - 640*480 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 32 - 640*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-640*480";
                 model32_640_480();
                 // Whatever you want to happen when the third item gets selected
                 break;
             case 10:
-                Toast.makeText(mContext, "Float 32 - 640*640 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 32 - 640*640 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-640*640";
                 model32_640_640();
                 break;
             case 11:
-                Toast.makeText(mContext, "Float 32 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "Float 32 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-1280*800";
                 model32_1280_800();
                 // Whatever you want to happen when the third item gets selected
                 break;
             default:
-                Toast.makeText(mContext, "By Default FLoat 16- 320*320 Selected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(mContext, "By Default FLoat 16- 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*480";
                 model16_320_320();
         }
@@ -211,6 +216,45 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+
+    public class AsyncPredictData extends AsyncTask<String, Integer, String> {
+        Context context;
+
+        public AsyncPredictData(Context context2) {
+            context = context2;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            Log.d("scanner", "in PreExecute ");
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            predictText();
+            String res = "success";
+
+            return res;
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+
+            Log.d("scanner", "in onProgresUpdate ");
+        }
+
+        @Override
+        protected void onPostExecute(String file) {
+            super.onPostExecute(file);
+            Log.d("scanner", "in onPostExecute ");
+        }
+    }
+
+
     @SuppressLint("SetTextI18n")
     private void model16_320_320(){
 
@@ -236,6 +280,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "model16_320_320: After InputFeature and Before Outputs " + formatter2.format(date2));
 
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+                }
+            });
+
             // Runs model inference and gets result.
             Craft320320Float16.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -244,12 +298,28 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date3 = new Date();
             Log.d(TAG, "model16_320_320: After Outputs " + formatter3.format(date3));
 
+            long outputTimeDiff = date3.getTime() - date2.getTime();
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+                }
+            });
+
             Log.d(TAG, "onClick: output feature " + selectedModel+ " "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+            runOnUiThread(new Runnable() {
 
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+                }
+            });
             // Releases model resources if no longer used.
             model.close();
 
@@ -285,7 +355,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
             Log.d(TAG, "Craft480320Float16: After InputFeature and Before Outputs " + formatter2.format(date2));
+            long inputTimeDiff = date2.getTime() - date.getTime();
 
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                }
+            });
 
             // Runs model inference and gets result.
             Craft480320Float16.Outputs outputs = model.process(inputFeature0);
@@ -486,6 +564,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "model16_1280_800: After Inputs and Before outputs " + formatter2.format(date2));
 
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+                }
+            });
+
             // Runs model inference and gets result.
             Craft1280800Float16.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -495,11 +583,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date3 = new Date();
             Log.d(TAG, "model16_1280_800: After outputs " + formatter3.format(date3));
 
+            long outputTimeDiff = date3.getTime() - date2.getTime();
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+                }
+            });
+
             Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
