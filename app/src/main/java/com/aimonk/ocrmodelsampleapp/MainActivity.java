@@ -12,6 +12,7 @@ import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -103,77 +104,184 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     private void predictText(){
         Log.d(TAG, "predictText: Position Selected " + positionSelected);
+        ArrayList<ArrayList<long[]>> resArr = new ArrayList<>();
         switch (positionSelected) {
             case 0:
+                ArrayList<long[]> arr0 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr0.add(model16_320_320());
+                }
+                resArr.add(arr0);
 //                Toast.makeText(mContext, "Float 16 - 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-320*320";
-                model16_320_320();
+
                 break;
             case 1:
+                ArrayList<long[]> arr1 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr1.add(model16_480_320());
+                }
+                resArr.add(arr1);
 //                Toast.makeText(mContext, "Float 16 - 480*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*320";
-                model16_480_320();
+
                 break;
             case 2:
+
+                ArrayList<long[]> arr2 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr2.add(model16_480_480());
+                }
+                resArr.add(arr2);
 //                Toast.makeText(mContext, "Float 16 - 480*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*480";
-                model16_480_480();
 
                 break;
             case 3:
+                ArrayList<long[]> arr3 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr3.add(model16_640_480());
+                }
+                resArr.add(arr3);
 //                Toast.makeText(mContext, "Float 16 - 640*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-640*480";
-                model16_640_480();
                 break;
             case 4:
+                ArrayList<long[]> arr4 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr4.add(model16_640_640());
+                }
+                resArr.add(arr4);
 //                Toast.makeText(mContext, "Float 16 - 640*640 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-640*640";
-                model16_640_640();
                 break;
             case 5:
+                ArrayList<long[]> arr5 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr5.add(model16_1280_800());
+                }
+                resArr.add(arr5);
 //                Toast.makeText(mContext, "Float 16 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-1280*800";
-                model16_1280_800();
                 break;
             case 6:
+                ArrayList<long[]> arr6 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr6.add(model32_320_320());
+                }
+                resArr.add(arr6);
 //                Toast.makeText(mContext, "Float 32 - 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-320*320";
-                model32_320_320();
 
                 break;
             case 7:
+                ArrayList<long[]> arr7 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr7.add(model32_480_320());
+                }
+                resArr.add(arr7);
 //                Toast.makeText(mContext, "Float 32 - 480*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-480*320";
-                model32_480_320();
                 // Whatever you want to happen when the third item gets selected
                 break;
             case 8:
+                ArrayList<long[]> arr8 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr8.add(model32_480_480());
+                }
+                resArr.add(arr8);
 //                Toast.makeText(mContext, "Float 32 - 480*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-480*480";
-                model32_480_480();
                 break;
             case 9:
+                ArrayList<long[]> arr9 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr9.add(model32_640_480());
+                }
+                resArr.add(arr9);
 //                Toast.makeText(mContext, "Float 32 - 640*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-640*480";
-                model32_640_480();
                 // Whatever you want to happen when the third item gets selected
                 break;
             case 10:
+                ArrayList<long[]> arr10 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr10.add(model32_640_640());
+                }
+                resArr.add(arr10);
 //                Toast.makeText(mContext, "Float 32 - 640*640 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-640*640";
-                model32_640_640();
                 break;
             case 11:
+                ArrayList<long[]> arr11 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr11.add(model32_1280_800());
+                }
+                resArr.add(arr11);
 //                Toast.makeText(mContext, "Float 32 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-1280*800";
-                model32_1280_800();
                 // Whatever you want to happen when the third item gets selected
                 break;
             default:
+                ArrayList<long[]> arr12 = new ArrayList<>();
+                for (int i = 0; i< 16; i++){
+                    arr12.add(model16_320_320());
+                }
+                resArr.add(arr12);
 //                Toast.makeText(mContext, "By Default FLoat 16- 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*480";
-                model16_320_320();
         }
+        Log.d(TAG, "predictText: ResArr " + resArr);
+    }
+
+    private void writeLogs(){
+
+        if ( isExternalStorageWritable() ) {
+
+            File appDirectory = new File( getExternalFilesDir(null)  + "/" + "TezzScanner" + "/" );
+            File logDirectory = new File( appDirectory + "/logs" );
+            File logFile = new File( logDirectory, "logcat_file" + ".txt" );
+
+            // create app folder
+            if ( !appDirectory.exists() ) {
+                appDirectory.mkdir();
+            }
+
+            // create log folder
+            if ( !logDirectory.exists() ) {
+                logDirectory.mkdir();
+            }
+
+            // clear the previous logcat and then write the new one to the file
+            try {
+                Process process = Runtime.getRuntime().exec("logcat -c");
+                process = Runtime.getRuntime().exec("logcat -f " + logFile);
+            } catch ( IOException e ) {
+                e.printStackTrace();
+            }
+
+        } else if ( isExternalStorageReadable() ) {
+            // only readable
+        } else {
+            // not accessible
+        }
+    }
+    public boolean isExternalStorageWritable() {
+        String state = Environment.getExternalStorageState();
+        if ( Environment.MEDIA_MOUNTED.equals( state ) ) {
+            return true;
+        }
+        return false;
+    }
+
+    /* Checks if external storage is available to at least read */
+    public boolean isExternalStorageReadable() {
+        String state = Environment.getExternalStorageState();
+        if ( Environment.MEDIA_MOUNTED.equals( state ) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals( state ) ) {
+            return true;
+        }
+        return false;
     }
 
     private void callGalleryIntent() {
@@ -216,7 +324,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-
     public class AsyncPredictData extends AsyncTask<String, Integer, String> {
         Context context;
 
@@ -254,10 +361,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-
     @SuppressLint("SetTextI18n")
-    private void model16_320_320(){
+    private long[] model16_320_320(){
 
+        long[] res = new long[2];
         img = Bitmap.createScaledBitmap(img, 320, 320, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
 
@@ -281,6 +388,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Log.d(TAG, "model16_320_320: After InputFeature and Before Outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -299,6 +407,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Log.d(TAG, "model16_320_320: After Outputs " + formatter3.format(date3));
 
             long outputTimeDiff = date3.getTime() - date2.getTime();
+            res[1] = outputTimeDiff;
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -327,11 +436,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model16_320_320: Exception " + e.getMessage());
         }
+        return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private void model16_480_320(){
+    private long[] model16_480_320(){
 
+        long[] res = new long[2];
         img = Bitmap.createScaledBitmap(img, 480, 320, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
 
@@ -356,12 +467,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "Craft480320Float16: After InputFeature and Before Outputs " + formatter2.format(date2));
             long inputTimeDiff = date2.getTime() - date.getTime();
-
+            res[0] = inputTimeDiff;
             runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
                     // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
                 }
             });
 
@@ -373,6 +485,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
             Log.d(TAG, "Craft480320Float16: After Outputs " + formatter3.format(date3));
+
+            long outputDiff = date3.getTime() - date2.getTime();
+            res[1] = outputDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("OutputImageTimeText " + outputDiff);
+                }
+            });
 
             Log.d(TAG, "onClick: output feature "+  selectedModel+ " "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
@@ -387,12 +510,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model16_480_320: Exception " + e.getMessage());
         }
-
+        return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private void model16_480_480(){
+    private long[] model16_480_480(){
 
+        long[] res = new long[2];
         img = Bitmap.createScaledBitmap(img, 480, 480, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
 
@@ -417,14 +541,35 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "Craft480480Float16: After Input and Before Outputs " + formatter2.format(date2));
 
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+                }
+            });
             // Runs model inference and gets result.
             Craft480480Float16.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
             Log.d(TAG, "Craft480480Float16: After Outputs " + formatter3.format(date3));
 
+            long outputDiff = date3.getTime() - date2.getTime();
+            res[1] = outputDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
+                }
+            });
             Log.d(TAG, "onClick: output feature " + selectedModel+ " "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
@@ -436,10 +581,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model16_480_480: Exception " + e.getMessage());
         }
+        return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private void model16_640_480(){
+    private long[] model16_640_480(){
+        long[] res = new long[2];
 
         img = Bitmap.createScaledBitmap(img, 640, 480, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
@@ -464,6 +611,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
             Log.d(TAG, "Craft640480Float16: After Inputs and Before Outputs " + formatter2.format(date2));
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+                }
+            });
+
 
             // Runs model inference and gets result.
             Craft640480Float16.Outputs outputs = model.process(inputFeature0);
@@ -473,6 +631,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
             Log.d(TAG, "Craft640480Float16: After Outputs " + formatter3.format(date3));
+
+            long outputDiff = date3.getTime() - date2.getTime();
+            res[1] = outputDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
+                }
+            });
+
 
             Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
@@ -484,12 +654,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model16_640_480: Exception " + e.getMessage());
         }
+        return res;
 
     }
 
     @SuppressLint("SetTextI18n")
-    private void model16_640_640(){
-
+    private long[] model16_640_640(){
+        long[] res = new long[2];
         img = Bitmap.createScaledBitmap(img, 640, 640, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
 
@@ -514,6 +685,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "Craft640640Float16: After Inputs and Before Outputs " + formatter2.format(date2));
 
+
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+                }
+            });
+
             // Runs model inference and gets result.
             Craft640640Float16.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -522,6 +705,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
             Log.d(TAG, "Craft640640Float16: After Outputs " + formatter3.format(date3));
+
+
+            long outputDiff = date3.getTime() - date2.getTime();
+            res[1] = outputDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
+                }
+            });
 
             Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
@@ -535,10 +730,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model16_640_640: Exception " + e.getMessage());
         }
+        return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private void model16_1280_800(){
+    private long[] model16_1280_800(){
+
+        long[] res = new long[2];
 
         img = Bitmap.createScaledBitmap(img, 1280, 800, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
@@ -565,6 +763,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Log.d(TAG, "model16_1280_800: After Inputs and Before outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -584,6 +784,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Log.d(TAG, "model16_1280_800: After outputs " + formatter3.format(date3));
 
             long outputTimeDiff = date3.getTime() - date2.getTime();
+            res[1] = outputTimeDiff;
             runOnUiThread(new Runnable() {
 
                 @Override
@@ -605,11 +806,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model16_1280_800: Exception " + e.getMessage());
         }
+        return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private void model32_320_320(){
+    private long[] model32_320_320(){
 
+        long[] res = new long[2];
         img = Bitmap.createScaledBitmap(img, 320, 320, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
 
@@ -633,7 +836,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
             Log.d(TAG, "Craft320320Float32: After Inputs and Before Outputs " + formatter2.format(date2));
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+            runOnUiThread(new Runnable() {
 
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+                }
+            });
             // Runs model inference and gets result
             Craft320320Float32.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -642,6 +854,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date3 = new Date();
             Log.d(TAG, "Craft320320Float32: After Outputs " + formatter3.format(date3));
 
+
+            long outputDiff = date3.getTime() - date2.getTime();
+            res[1] = outputDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
+                }
+            });
             Log.d(TAG, "onClick: output feature "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
@@ -654,12 +877,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model32_320_320: Exception "  + e.getMessage());
         }
-
+        return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private void model32_480_320(){
-
+    private long[] model32_480_320(){
+        long[] res = new long[2];
         img = Bitmap.createScaledBitmap(img, 480, 320, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
 
@@ -684,6 +907,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "Craft480320Float32: After Inputs and Before Outputs " + formatter2.format(date2));
 
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+                }
+            });
             // Runs model inference and gets result.
             Craft480320Float32.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -692,7 +926,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
             Log.d(TAG, "Craft480320Float32: After Outputs " + formatter3.format(date3));
+            long outputTimeDiff = date3.getTime() - date2.getTime();
+            res[1] = outputTimeDiff;
+            runOnUiThread(new Runnable() {
 
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+                }
+            });
             Log.d(TAG, "onClick: output feature "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
@@ -705,10 +948,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model32_480_320: Exception " + e.getMessage());
         }
+        return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private void model32_480_480(){
+    private long[] model32_480_480(){
+        long[] res = new long[2];
 
         img = Bitmap.createScaledBitmap(img, 480, 480, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
@@ -734,6 +979,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "Craft480480Float32: After Inputs and Before Outputs " + formatter2.format(date2));
 
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+                }
+            });
             // Runs model inference and gets result.
             Craft480480Float32.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -743,6 +999,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date3 = new Date();
             Log.d(TAG, "Craft480480Float32: After Outputs " + formatter3.format(date3));
 
+            long outputTimeDiff = date3.getTime() - date2.getTime();
+            res[1] = outputTimeDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+                }
+            });
             Log.d(TAG, "onClick: output feature "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
@@ -754,11 +1020,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } catch (IOException e) {
             Log.d(TAG, "model32_480_480: Exception " + e.getMessage());
         }
-
+        return res;
     }
     @SuppressLint("SetTextI18n")
-    private void model32_640_480(){
+    private long[] model32_640_480(){
 
+        long[] res = new long[2];
         img = Bitmap.createScaledBitmap(img, 640, 480, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
 
@@ -783,6 +1050,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "Craft640480Float32: After inputs and Before Outputs " + formatter2.format(date2));
 
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+                }
+            });
+
             // Runs model inference and gets result.
             Craft640480Float32.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -791,6 +1070,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
             Log.d(TAG, "Craft640480Float32: After Outputs " + formatter3.format(date3));
+
+            long outputTimeDiff = date3.getTime() - date2.getTime();
+            res[1] = outputTimeDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+                }
+            });
 
             Log.d(TAG, "onClick: output feature "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
@@ -804,10 +1094,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             // TODO Handle the exception
             Log.d(TAG, "model32_640_480: Exception " + e.getMessage());
         }
+        return res;
 
     }
     @SuppressLint("SetTextI18n")
-    private void model32_640_640(){
+    private long[] model32_640_640(){
+        long[] res = new long[2];
 
         img = Bitmap.createScaledBitmap(img, 640, 640, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
@@ -833,6 +1125,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "Craft640640Float32: After inputs and Before outputs " + formatter2.format(date2));
 
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+                }
+            });
+
             // Runs model inference and gets result.
             Craft640640Float32.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -841,6 +1145,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
             Log.d(TAG, "Craft640640Float32: After Outputs " + formatter3.format(date3));
+
+            long outputTimeDiff = date3.getTime() - date2.getTime();
+            res[1] = outputTimeDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+                }
+            });
 
             Log.d(TAG, "onClick: output feature "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
@@ -853,9 +1168,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } catch (IOException e) {
             Log.d(TAG, "model32_640_640: Exception " + e.getMessage());
         }
+        return res;
     }
+
     @SuppressLint("SetTextI18n")
-    private void model32_1280_800(){
+    private long[] model32_1280_800(){
+        long[] res = new long[2];
 
         img = Bitmap.createScaledBitmap(img, 1280, 800, true);
         img = img.copy(Bitmap.Config.ARGB_8888, true);
@@ -882,6 +1200,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date2 = new Date();
             Log.d(TAG, "Craft1280800Float32: After Inputs and Before Outputs " + formatter2.format(date2));
 
+            long inputTimeDiff = date2.getTime() - date.getTime();
+            res[0] = inputTimeDiff;
+
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+                }
+            });
+
             // Runs model inference and gets result.
             Craft1280800Float32.Outputs outputs = model.process(inputFeature0);
             TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
@@ -891,6 +1221,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             Date date3 = new Date();
             Log.d(TAG, "Craft1280800Float32: After Outputs " + formatter3.format(date3));
 
+            long outputTimeDiff = date3.getTime() - date2.getTime();
+            res[1] = outputTimeDiff;
+            runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    // Stuff that updates the UI
+                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+                }
+            });
             Log.d(TAG, "onClick: output feature "+
                     outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
@@ -902,6 +1242,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } catch (IOException e) {
             Log.d(TAG, "model32_1280_800: Exception " + e.getMessage());
         }
+        return res;
     }
 
     @Override
