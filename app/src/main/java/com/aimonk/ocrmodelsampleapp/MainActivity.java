@@ -3,6 +3,7 @@ package com.aimonk.ocrmodelsampleapp;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +45,7 @@ import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private Spinner dropdown;
     private String selectedModel;
     private int positionSelected = 0;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         predict = (Button) findViewById(R.id.predict);
         inputImageTimeText = findViewById(R.id.inputImageTimeText);
         outputImageTimeText = findViewById(R.id.outputImageTimeText);
+        progressBar = findViewById(R.id.progressbar);
 
         dropdown = findViewById(R.id.spinner);
         String[] items = new String[]{"Float16_320_320", "Float16_480_320", "Float16_480_480", "Float16_640_480",
@@ -97,7 +102,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 new AsyncPredictData(mContext).execute();
+                progressBar.setVisibility(View.GONE);
+
             }
         });
     }
@@ -231,14 +239,47 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //                Toast.makeText(mContext, "By Default FLoat 16- 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*480";
         }
-        Log.d(TAG, "predictText: ResArr " + resArr);
+        int tempInputTime = 0;
+        int tempOutputTime = 0;
+        int size = 0;
+        for(int i = 0; i< resArr.size(); i++){
+            for (int j = 1; j< resArr.get(i).size()-1; j++){
+                size = resArr.get(i).size();
+
+                tempInputTime += resArr.get(i).get(j)[0];
+                tempOutputTime += resArr.get(i).get(j)[1];
+
+//                Log.d(TAG, "predictText: i " + i + " j " + j + " k " + 1);
+                Log.d(TAG, "Model " + selectedModel  + "predictText: ResArr " + resArr.get(i).get(j)[1]);
+            }
+        }
+        size = 14;
+
+        Log.d(TAG, "Model " + selectedModel  + "predictText: Total No. of times model run " + size);
+
+        double meanInputTime = tempInputTime/size;
+        double meanOutputTime = tempOutputTime/size;
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                // Stuff that updates the UI
+                inputImageTimeText.setText("MeanInputImageTimeDifference: "+ meanInputTime);
+                outputImageTimeText.setText("MeanOutputImageTimeDifference: " + meanOutputTime);
+            }
+        });
+        Log.d(TAG, "Model " + selectedModel  + "predictText: Mean of time to Input Image  "
+                + meanInputTime + " Mean of time to Output Image " + meanOutputTime);
+        writeLogs("selectedModel " + selectedModel + "\n" + "MeanInputImageTimeDifference: " +
+                meanInputTime + "\n" +  " MeanOutputImageTimeDifference: " + meanOutputTime);
+
     }
 
-    private void writeLogs(){
+    private void writeLogs(String data){
 
         if ( isExternalStorageWritable() ) {
 
-            File appDirectory = new File( getExternalFilesDir(null)  + "/" + "TezzScanner" + "/" );
+            File appDirectory = new File( getExternalFilesDir(null)  + "/" + "TezzScanner" );
             File logDirectory = new File( appDirectory + "/logs" );
             File logFile = new File( logDirectory, "logcat_file" + ".txt" );
 
@@ -251,6 +292,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             if ( !logDirectory.exists() ) {
                 logDirectory.mkdir();
             }
+//
+//            String path = getExternalFilesDir(null)  + "/" + "TezzScanner" + "/logs";
+//            File f = new File(path);
+//            File fileTo = new File(f.toString() + "/logcat_file.png");
 
             // clear the previous logcat and then write the new one to the file
             try {
@@ -260,10 +305,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 e.printStackTrace();
             }
 
-        } else if ( isExternalStorageReadable() ) {
-            // only readable
-        } else {
-            // not accessible
         }
     }
     public boolean isExternalStorageWritable() {
@@ -326,6 +367,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public class AsyncPredictData extends AsyncTask<String, Integer, String> {
         Context context;
+        ProgressDialog progressDialog;
 
         public AsyncPredictData(Context context2) {
             context = context2;
@@ -334,8 +376,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
-            Log.d("scanner", "in PreExecute ");
+            Log.d("MonkVision", "in PreExecute ");
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setTitle("Please wait...");
+            progressDialog.setMessage("Creating pdf...");
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            progressDialog.setIndeterminate(false);
+            progressDialog.setMax(100);
+            progressDialog.setCancelable(false);
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.show();
         }
 
         @Override
@@ -352,12 +402,23 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             super.onProgressUpdate(values);
 
             Log.d("scanner", "in onProgresUpdate ");
+
+            this.progressDialog.setProgress(((values[0] + 1) * 100) / 2);
+            StringBuilder sb = new StringBuilder();
+            sb.append("Processing images (");
+            sb.append(values[0] + 1);
+            sb.append("/");
+            sb.append(10);
+            sb.append(")");
+            progressDialog.setTitle(sb.toString());
         }
 
         @Override
         protected void onPostExecute(String file) {
             super.onPostExecute(file);
             Log.d("scanner", "in onPostExecute ");
+
+            progressDialog.dismiss();
         }
     }
 
@@ -374,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "model16_320_320: Before InputFeature" + formatter.format(date));
+//            Log.d(TAG, "model16_320_320: Before InputFeature" + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 320, 320}, DataType.FLOAT32);
@@ -385,7 +446,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "model16_320_320: After InputFeature and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "model16_320_320: After InputFeature and Before Outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
@@ -394,7 +455,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
                 }
             });
 
@@ -404,7 +465,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "model16_320_320: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "model16_320_320: After Outputs " + formatter3.format(date3));
 
             long outputTimeDiff = date3.getTime() - date2.getTime();
             res[1] = outputTimeDiff;
@@ -413,20 +474,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+//                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
                 }
             });
 
-            Log.d(TAG, "onClick: output feature " + selectedModel+ " "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature " + selectedModel+ " "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
             runOnUiThread(new Runnable() {
 
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//                    tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
                 }
             });
             // Releases model resources if no longer used.
@@ -452,7 +513,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft480320Float16: Before InputFeature " + formatter.format(date));
+//            Log.d(TAG, "Craft480320Float16: Before InputFeature " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 320}, DataType.FLOAT32);
@@ -465,7 +526,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft480320Float16: After InputFeature and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft480320Float16: After InputFeature and Before Outputs " + formatter2.format(date2));
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
             runOnUiThread(new Runnable() {
@@ -473,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
                 }
             });
 
@@ -484,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft480320Float16: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft480320Float16: After Outputs " + formatter3.format(date3));
 
             long outputDiff = date3.getTime() - date2.getTime();
             res[1] = outputDiff;
@@ -493,15 +554,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("OutputImageTimeText " + outputDiff);
+//                    outputImageTimeText.setText("OutputImageTimeText " + outputDiff);
                 }
             });
 
-            Log.d(TAG, "onClick: output feature "+  selectedModel+ " "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+  selectedModel+ " "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
@@ -526,7 +587,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft480480Float16: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "Craft480480Float16: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 480}, DataType.FLOAT32);
@@ -539,7 +600,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft480480Float16: After Input and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft480480Float16: After Input and Before Outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
@@ -548,7 +609,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
                 }
             });
             // Runs model inference and gets result.
@@ -558,7 +619,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft480480Float16: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft480480Float16: After Outputs " + formatter3.format(date3));
 
             long outputDiff = date3.getTime() - date2.getTime();
             res[1] = outputDiff;
@@ -567,14 +628,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
+//                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
                 }
             });
-            Log.d(TAG, "onClick: output feature " + selectedModel+ " "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature " + selectedModel+ " "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             model.close();
         } catch (IOException e) {
@@ -610,7 +671,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft640480Float16: After Inputs and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft640480Float16: After Inputs and Before Outputs " + formatter2.format(date2));
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
             runOnUiThread(new Runnable() {
@@ -618,7 +679,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
                 }
             });
 
@@ -630,7 +691,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft640480Float16: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft640480Float16: After Outputs " + formatter3.format(date3));
 
             long outputDiff = date3.getTime() - date2.getTime();
             res[1] = outputDiff;
@@ -639,16 +700,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
+//                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
                 }
             });
 
 
-            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
             model.close();
         } catch (IOException e) {
             // TODO Handle the exception
@@ -670,7 +731,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft640640Float16: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "Craft640640Float16: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 640}, DataType.FLOAT32);
@@ -683,7 +744,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft640640Float16: After Inputs and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft640640Float16: After Inputs and Before Outputs " + formatter2.format(date2));
 
 
             long inputTimeDiff = date2.getTime() - date.getTime();
@@ -693,7 +754,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
                 }
             });
 
@@ -704,7 +765,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft640640Float16: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft640640Float16: After Outputs " + formatter3.format(date3));
 
 
             long outputDiff = date3.getTime() - date2.getTime();
@@ -714,15 +775,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
+//                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
                 }
             });
 
-            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
@@ -747,7 +808,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "model16_1280_800: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "model16_1280_800: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 1280, 800}, DataType.FLOAT32);
@@ -760,7 +821,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "model16_1280_800: After Inputs and Before outputs " + formatter2.format(date2));
+//            Log.d(TAG, "model16_1280_800: After Inputs and Before outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
@@ -770,7 +831,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
                 }
             });
 
@@ -781,7 +842,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "model16_1280_800: After outputs " + formatter3.format(date3));
+//            Log.d(TAG, "model16_1280_800: After outputs " + formatter3.format(date3));
 
             long outputTimeDiff = date3.getTime() - date2.getTime();
             res[1] = outputTimeDiff;
@@ -790,14 +851,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+//                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
                 }
             });
 
-            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
@@ -822,7 +883,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft320320Float32: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "Craft320320Float32: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 320, 320}, DataType.FLOAT32);
@@ -835,7 +896,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft320320Float32: After Inputs and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft320320Float32: After Inputs and Before Outputs " + formatter2.format(date2));
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
             runOnUiThread(new Runnable() {
@@ -843,7 +904,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
                 }
             });
             // Runs model inference and gets result
@@ -852,7 +913,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft320320Float32: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft320320Float32: After Outputs " + formatter3.format(date3));
 
 
             long outputDiff = date3.getTime() - date2.getTime();
@@ -862,14 +923,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
+//                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
                 }
             });
-            Log.d(TAG, "onClick: output feature "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
@@ -892,7 +953,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft480320Float32: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "Craft480320Float32: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 320}, DataType.FLOAT32);
@@ -905,7 +966,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft480320Float32: After Inputs and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft480320Float32: After Inputs and Before Outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
@@ -915,7 +976,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
                 }
             });
             // Runs model inference and gets result.
@@ -925,7 +986,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft480320Float32: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft480320Float32: After Outputs " + formatter3.format(date3));
             long outputTimeDiff = date3.getTime() - date2.getTime();
             res[1] = outputTimeDiff;
             runOnUiThread(new Runnable() {
@@ -933,14 +994,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+//                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
                 }
             });
-            Log.d(TAG, "onClick: output feature "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
@@ -964,7 +1025,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft480480Float32: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "Craft480480Float32: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 480}, DataType.FLOAT32);
@@ -977,7 +1038,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft480480Float32: After Inputs and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft480480Float32: After Inputs and Before Outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
@@ -987,7 +1048,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
                 }
             });
             // Runs model inference and gets result.
@@ -997,7 +1058,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft480480Float32: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft480480Float32: After Outputs " + formatter3.format(date3));
 
             long outputTimeDiff = date3.getTime() - date2.getTime();
             res[1] = outputTimeDiff;
@@ -1006,14 +1067,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+//                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
                 }
             });
-            Log.d(TAG, "onClick: output feature "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
@@ -1035,7 +1096,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft640480Float32: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "Craft640480Float32: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 480}, DataType.FLOAT32);
@@ -1048,7 +1109,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft640480Float32: After inputs and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft640480Float32: After inputs and Before Outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
@@ -1058,7 +1119,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
                 }
             });
 
@@ -1069,7 +1130,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft640480Float32: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft640480Float32: After Outputs " + formatter3.format(date3));
 
             long outputTimeDiff = date3.getTime() - date2.getTime();
             res[1] = outputTimeDiff;
@@ -1078,15 +1139,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+//                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
                 }
             });
 
-            Log.d(TAG, "onClick: output feature "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
@@ -1110,7 +1171,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft640640Float32: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "Craft640640Float32: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 640}, DataType.FLOAT32);
@@ -1123,7 +1184,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft640640Float32: After inputs and Before outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft640640Float32: After inputs and Before outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
@@ -1133,7 +1194,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
                 }
             });
 
@@ -1144,7 +1205,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft640640Float32: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft640640Float32: After Outputs " + formatter3.format(date3));
 
             long outputTimeDiff = date3.getTime() - date2.getTime();
             res[1] = outputTimeDiff;
@@ -1153,15 +1214,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+//                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
                 }
             });
 
-            Log.d(TAG, "onClick: output feature "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
@@ -1185,7 +1246,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date = new Date();
-            Log.d(TAG, "Craft1280800Float32: Before Inputs " + formatter.format(date));
+//            Log.d(TAG, "Craft1280800Float32: Before Inputs " + formatter.format(date));
 
             // Creates inputs for reference.
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 1280, 800}, DataType.FLOAT32);
@@ -1198,7 +1259,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date2 = new Date();
-            Log.d(TAG, "Craft1280800Float32: After Inputs and Before Outputs " + formatter2.format(date2));
+//            Log.d(TAG, "Craft1280800Float32: After Inputs and Before Outputs " + formatter2.format(date2));
 
             long inputTimeDiff = date2.getTime() - date.getTime();
             res[0] = inputTimeDiff;
@@ -1208,7 +1269,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
+//                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
                 }
             });
 
@@ -1219,7 +1280,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //get the current time
             SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             Date date3 = new Date();
-            Log.d(TAG, "Craft1280800Float32: After Outputs " + formatter3.format(date3));
+//            Log.d(TAG, "Craft1280800Float32: After Outputs " + formatter3.format(date3));
 
             long outputTimeDiff = date3.getTime() - date2.getTime();
             res[1] = outputTimeDiff;
@@ -1228,14 +1289,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 @Override
                 public void run() {
                     // Stuff that updates the UI
-                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
+//                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
                 }
             });
-            Log.d(TAG, "onClick: output feature "+
-                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-
-            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//            Log.d(TAG, "onClick: output feature "+
+//                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
+//
+//            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
+//            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
             model.close();
