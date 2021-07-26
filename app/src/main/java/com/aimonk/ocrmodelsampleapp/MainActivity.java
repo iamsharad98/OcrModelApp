@@ -110,15 +110,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    private void predictText(){
+    private void predictText() throws IOException {
         Log.d(TAG, "predictText: Position Selected " + positionSelected);
         ArrayList<ArrayList<long[]>> resArr = new ArrayList<>();
         switch (positionSelected) {
             case 0:
                 ArrayList<long[]> arr0 = new ArrayList<>();
+
+                Bitmap bmp0 = Bitmap.createScaledBitmap(img, 320, 320, true);
+                bmp0 = bmp0.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft320320Float16 model = Craft320320Float16.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr0.add(model16_320_320());
+                    arr0.add(model16_320_320(model, bmp0));
                 }
+                model.close();
                 resArr.add(arr0);
 //                Toast.makeText(mContext, "Float 16 - 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-320*320";
@@ -126,9 +133,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             case 1:
                 ArrayList<long[]> arr1 = new ArrayList<>();
+                Bitmap bmp1 = Bitmap.createScaledBitmap(img, 480, 320, true);
+                bmp1 = bmp1.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft480320Float16 model1 = Craft480320Float16.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr1.add(model16_480_320());
+                    arr1.add(model16_480_320(model1, bmp1));
                 }
+                model1.close();
                 resArr.add(arr1);
 //                Toast.makeText(mContext, "Float 16 - 480*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*320";
@@ -137,9 +150,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             case 2:
 
                 ArrayList<long[]> arr2 = new ArrayList<>();
+                Bitmap bmp2 = Bitmap.createScaledBitmap(img, 480, 480, true);
+                bmp2 = bmp2.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft480480Float16 model2 = Craft480480Float16.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr2.add(model16_480_480());
+                    arr2.add(model16_480_480(model2, bmp2));
                 }
+                model2.close();
                 resArr.add(arr2);
 //                Toast.makeText(mContext, "Float 16 - 480*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*480";
@@ -147,36 +166,60 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             case 3:
                 ArrayList<long[]> arr3 = new ArrayList<>();
+                Bitmap bmp3 = Bitmap.createScaledBitmap(img, 640, 480, true);
+                bmp3 = bmp3.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft640480Float16 model3 = Craft640480Float16.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr3.add(model16_640_480());
+                    arr3.add(model16_640_480(model3, bmp3));
                 }
+                model3.close();
                 resArr.add(arr3);
 //                Toast.makeText(mContext, "Float 16 - 640*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-640*480";
                 break;
             case 4:
                 ArrayList<long[]> arr4 = new ArrayList<>();
+                Bitmap bmp4 = Bitmap.createScaledBitmap(img, 640, 640, true);
+                bmp4 = bmp4.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft640640Float16 model4 = Craft640640Float16.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr4.add(model16_640_640());
+                    arr4.add(model16_640_640(model4, bmp4));
                 }
+                model4.close();
                 resArr.add(arr4);
 //                Toast.makeText(mContext, "Float 16 - 640*640 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-640*640";
                 break;
             case 5:
                 ArrayList<long[]> arr5 = new ArrayList<>();
+                Bitmap bmp5 = Bitmap.createScaledBitmap(img, 1280, 800, true);
+                bmp5 = bmp5.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft1280800Float16 model5 = Craft1280800Float16.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr5.add(model16_1280_800());
+                    arr5.add(model16_1280_800(model5, bmp5));
                 }
+                model5.close();
                 resArr.add(arr5);
 //                Toast.makeText(mContext, "Float 16 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-1280*800";
                 break;
             case 6:
                 ArrayList<long[]> arr6 = new ArrayList<>();
+                Bitmap bmp6 = Bitmap.createScaledBitmap(img, 320, 320, true);
+                bmp6 = bmp6.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft320320Float32 model6 = Craft320320Float32.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr6.add(model32_320_320());
+                    arr6.add(model32_320_320(model6, bmp6));
                 }
+                model6.close();
                 resArr.add(arr6);
 //                Toast.makeText(mContext, "Float 32 - 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-320*320";
@@ -184,9 +227,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             case 7:
                 ArrayList<long[]> arr7 = new ArrayList<>();
+                Bitmap bmp7 = Bitmap.createScaledBitmap(img, 480, 320, true);
+                bmp7 = bmp7.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft480320Float32 model7 = Craft480320Float32.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr7.add(model32_480_320());
+                    arr7.add(model32_480_320(model7, bmp7));
                 }
+                model7.close();
                 resArr.add(arr7);
 //                Toast.makeText(mContext, "Float 32 - 480*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-480*320";
@@ -194,18 +243,30 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             case 8:
                 ArrayList<long[]> arr8 = new ArrayList<>();
+                Bitmap bmp8 = Bitmap.createScaledBitmap(img, 480, 480, true);
+                bmp8 = bmp8.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft480480Float32 model8 = Craft480480Float32.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr8.add(model32_480_480());
+                    arr8.add(model32_480_480(model8, bmp8));
                 }
+                model8.close();
                 resArr.add(arr8);
 //                Toast.makeText(mContext, "Float 32 - 480*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-480*480";
                 break;
             case 9:
                 ArrayList<long[]> arr9 = new ArrayList<>();
+                Bitmap bmp9 = Bitmap.createScaledBitmap(img, 640, 480, true);
+                bmp9 = bmp9.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft640480Float32 model9 = Craft640480Float32.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr9.add(model32_640_480());
+                    arr9.add(model32_640_480(model9, bmp9));
                 }
+                model9.close();
                 resArr.add(arr9);
 //                Toast.makeText(mContext, "Float 32 - 640*480 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-640*480";
@@ -213,18 +274,30 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             case 10:
                 ArrayList<long[]> arr10 = new ArrayList<>();
+                Bitmap bmp10 = Bitmap.createScaledBitmap(img, 640, 640, true);
+                bmp10 = bmp10.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft640640Float32 model10 = Craft640640Float32.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr10.add(model32_640_640());
+                    arr10.add(model32_640_640(model10, bmp10));
                 }
+                model10.close();
                 resArr.add(arr10);
 //                Toast.makeText(mContext, "Float 32 - 640*640 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-640*640";
                 break;
             case 11:
                 ArrayList<long[]> arr11 = new ArrayList<>();
+                Bitmap bmp11 = Bitmap.createScaledBitmap(img, 1280, 800, true);
+                bmp11 = bmp11.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft1280800Float32 model11 = Craft1280800Float32.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr11.add(model32_1280_800());
+                    arr11.add(model32_1280_800(model11, bmp11));
                 }
+                model11.close();
                 resArr.add(arr11);
 //                Toast.makeText(mContext, "Float 32 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "32-1280*800";
@@ -232,9 +305,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 break;
             default:
                 ArrayList<long[]> arr12 = new ArrayList<>();
+                Bitmap bmp12 = Bitmap.createScaledBitmap(img, 320, 320, true);
+                bmp12 = bmp12.copy(Bitmap.Config.ARGB_8888, true);
+
+                Craft320320Float16 model12 = Craft320320Float16.newInstance(mContext);
+
                 for (int i = 0; i< 16; i++){
-                    arr12.add(model16_320_320());
+                    arr12.add(model16_320_320(model12, bmp12));
                 }
+                model12.close();
                 resArr.add(arr12);
 //                Toast.makeText(mContext, "By Default FLoat 16- 320*320 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-480*480";
@@ -307,6 +386,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         }
     }
+
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
         if ( Environment.MEDIA_MOUNTED.equals( state ) ) {
@@ -391,7 +471,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         protected String doInBackground(String... strings) {
 
-            predictText();
+            try {
+                predictText();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.d(TAG, "doInBackground: Exception " + e.getMessage());
+            }
             String res = "success";
 
             return res;
@@ -423,140 +508,134 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model16_320_320(){
+    private long[] model16_320_320(Craft320320Float16 model, Bitmap bmp) {
 
         long[] res = new long[2];
-        img = Bitmap.createScaledBitmap(img, 320, 320, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 320, 320, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft320320Float16 model = Craft320320Float16.newInstance(mContext);
+        //            Craft320320Float16 model = Craft320320Float16.newInstance(mContext);
 
-            //get the current time
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
+        //get the current time
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
 //            Log.d(TAG, "model16_320_320: Before InputFeature" + formatter.format(date));
 
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 320, 320}, DataType.FLOAT32);
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
-            ByteBuffer byteBuffer = tensorImage.getBuffer();
-            inputFeature0.loadBuffer(byteBuffer);
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 320, 320}, DataType.FLOAT32);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
 
-            SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date2 = new Date();
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
 //            Log.d(TAG, "model16_320_320: After InputFeature and Before Outputs " + formatter2.format(date2));
 
-            long inputTimeDiff = date2.getTime() - date.getTime();
-            res[0] = inputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
-                }
-            });
+            }
+        });
 
-            // Runs model inference and gets result.
-            Craft320320Float16.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+        // Runs model inference and gets result.
+        Craft320320Float16.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
-            SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date3 = new Date();
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
 //            Log.d(TAG, "model16_320_320: After Outputs " + formatter3.format(date3));
 
-            long outputTimeDiff = date3.getTime() - date2.getTime();
-            res[1] = outputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long outputTimeDiff = date3.getTime() - date2.getTime();
+        res[1] = outputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
-                }
-            });
+            }
+        });
 
 //            Log.d(TAG, "onClick: output feature " + selectedModel+ " "+
 //                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
 //            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
-            runOnUiThread(new Runnable() {
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-                }
-            });
-            // Releases model resources if no longer used.
-            model.close();
+            }
+        });
+        // Releases model resources if no longer used.
+//            model.close();
 
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model16_320_320: Exception " + e.getMessage());
-        }
         return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model16_480_320(){
+    private long[] model16_480_320(Craft480320Float16 model, Bitmap bmp){
 
         long[] res = new long[2];
-        img = Bitmap.createScaledBitmap(img, 480, 320, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 480, 320, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft480320Float16 model = Craft480320Float16.newInstance(mContext);
+//        Craft480320Float16 model = Craft480320Float16.newInstance(mContext);
 
-            //get the current time
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
+        //get the current time
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
 //            Log.d(TAG, "Craft480320Float16: Before InputFeature " + formatter.format(date));
 
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 320}, DataType.FLOAT32);
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 320}, DataType.FLOAT32);
 
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
-            ByteBuffer byteBuffer = tensorImage.getBuffer();
-            inputFeature0.loadBuffer(byteBuffer);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
 
-            //get the current time
-            SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date2 = new Date();
+        //get the current time
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
 //            Log.d(TAG, "Craft480320Float16: After InputFeature and Before Outputs " + formatter2.format(date2));
-            long inputTimeDiff = date2.getTime() - date.getTime();
-            res[0] = inputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
-                }
-            });
+            }
+        });
 
-            // Runs model inference and gets result.
-            Craft480320Float16.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+        // Runs model inference and gets result.
+        Craft480320Float16.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
-            //get the current time
-            SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date3 = new Date();
+        //get the current time
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
 //            Log.d(TAG, "Craft480320Float16: After Outputs " + formatter3.format(date3));
 
-            long outputDiff = date3.getTime() - date2.getTime();
-            res[1] = outputDiff;
-            runOnUiThread(new Runnable() {
+        long outputDiff = date3.getTime() - date2.getTime();
+        res[1] = outputDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    outputImageTimeText.setText("OutputImageTimeText " + outputDiff);
-                }
-            });
+            }
+        });
 
 //            Log.d(TAG, "onClick: output feature "+  selectedModel+ " "+
 //                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
@@ -564,145 +643,136 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
-            // Releases model resources if no longer used.
-            model.close();
+        // Releases model resources if no longer used.
+//        model.close();
 
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model16_480_320: Exception " + e.getMessage());
-        }
         return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model16_480_480(){
+    private long[] model16_480_480(Craft480480Float16 model, Bitmap bmp){
 
         long[] res = new long[2];
-        img = Bitmap.createScaledBitmap(img, 480, 480, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 480, 480, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft480480Float16 model = Craft480480Float16.newInstance(mContext);
+//        Craft480480Float16 model = Craft480480Float16.newInstance(mContext);
 
-            //get the current time
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
+        //get the current time
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
 //            Log.d(TAG, "Craft480480Float16: Before Inputs " + formatter.format(date));
 
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 480}, DataType.FLOAT32);
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 480}, DataType.FLOAT32);
 
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
-            ByteBuffer byteBuffer = tensorImage.getBuffer();
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
 
-            inputFeature0.loadBuffer(byteBuffer);
-            //get the current time
-            SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date2 = new Date();
+        inputFeature0.loadBuffer(byteBuffer);
+        //get the current time
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
 //            Log.d(TAG, "Craft480480Float16: After Input and Before Outputs " + formatter2.format(date2));
 
-            long inputTimeDiff = date2.getTime() - date.getTime();
-            res[0] = inputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
-                }
-            });
-            // Runs model inference and gets result.
-            Craft480480Float16.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+            }
+        });
+        // Runs model inference and gets result.
+        Craft480480Float16.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
-            //get the current time
-            SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date3 = new Date();
+        //get the current time
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
 //            Log.d(TAG, "Craft480480Float16: After Outputs " + formatter3.format(date3));
 
-            long outputDiff = date3.getTime() - date2.getTime();
-            res[1] = outputDiff;
-            runOnUiThread(new Runnable() {
+        long outputDiff = date3.getTime() - date2.getTime();
+        res[1] = outputDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
-                }
-            });
+            }
+        });
 //            Log.d(TAG, "onClick: output feature " + selectedModel+ " "+
 //                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 //
 //            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model16_480_480: Exception " + e.getMessage());
-        }
+//            model.close();
+
         return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model16_640_480(){
+    private long[] model16_640_480(Craft640480Float16 model, Bitmap bmp){
         long[] res = new long[2];
 
-        img = Bitmap.createScaledBitmap(img, 640, 480, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 640, 480, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft640480Float16 model = Craft640480Float16.newInstance(mContext);
+//          Craft640480Float16 model = Craft640480Float16.newInstance(mContext);
 
-            //get the current time
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
-            Log.d(TAG, "Craft640480Float16: Before Inputs " + formatter.format(date));
+        //get the current time
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
+//            Log.d(TAG, "Craft640480Float16: Before Inputs " + formatter.format(date));
 
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 480}, DataType.FLOAT32);
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 480}, DataType.FLOAT32);
 
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
-            ByteBuffer byteBuffer = tensorImage.getBuffer();
-            inputFeature0.loadBuffer(byteBuffer);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
 
-            //get the current time
-            SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date2 = new Date();
+        //get the current time
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
 //            Log.d(TAG, "Craft640480Float16: After Inputs and Before Outputs " + formatter2.format(date2));
-            long inputTimeDiff = date2.getTime() - date.getTime();
-            res[0] = inputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
-                }
-            });
+            }
+        });
 
 
-            // Runs model inference and gets result.
-            Craft640480Float16.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+        // Runs model inference and gets result.
+        Craft640480Float16.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
-            //get the current time
-            SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date3 = new Date();
+        //get the current time
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
 //            Log.d(TAG, "Craft640480Float16: After Outputs " + formatter3.format(date3));
 
-            long outputDiff = date3.getTime() - date2.getTime();
-            res[1] = outputDiff;
-            runOnUiThread(new Runnable() {
+        long outputDiff = date3.getTime() - date2.getTime();
+        res[1] = outputDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
-                }
-            });
+            }
+        });
 
 
 //            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
@@ -710,74 +780,70 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //
 //            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model16_640_480: Exception " + e.getMessage());
-        }
+//            model.close();
+
         return res;
 
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model16_640_640(){
+    private long[] model16_640_640(Craft640640Float16 model, Bitmap bmp){
         long[] res = new long[2];
-        img = Bitmap.createScaledBitmap(img, 640, 640, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 640, 640, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft640640Float16 model = Craft640640Float16.newInstance(mContext);
+//            Craft640640Float16 model = Craft640640Float16.newInstance(mContext);
 
-            //get the current time
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
+        //get the current time
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
 //            Log.d(TAG, "Craft640640Float16: Before Inputs " + formatter.format(date));
 
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 640}, DataType.FLOAT32);
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 640}, DataType.FLOAT32);
 
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
-            ByteBuffer byteBuffer = tensorImage.getBuffer();
-            inputFeature0.loadBuffer(byteBuffer);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
 
-            //get the current time
-            SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date2 = new Date();
+        //get the current time
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
 //            Log.d(TAG, "Craft640640Float16: After Inputs and Before Outputs " + formatter2.format(date2));
 
 
-            long inputTimeDiff = date2.getTime() - date.getTime();
-            res[0] = inputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
-                }
-            });
+            }
+        });
 
-            // Runs model inference and gets result.
-            Craft640640Float16.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+        // Runs model inference and gets result.
+        Craft640640Float16.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
-            //get the current time
-            SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date3 = new Date();
+        //get the current time
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
 //            Log.d(TAG, "Craft640640Float16: After Outputs " + formatter3.format(date3));
 
 
-            long outputDiff = date3.getTime() - date2.getTime();
-            res[1] = outputDiff;
-            runOnUiThread(new Runnable() {
+        long outputDiff = date3.getTime() - date2.getTime();
+        res[1] = outputDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
-                }
-            });
+            }
+        });
 
 //            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
 //                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
@@ -785,75 +851,71 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
-            // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model16_640_640: Exception " + e.getMessage());
-        }
+        // Releases model resources if no longer used.
+//        model.close();
+
         return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model16_1280_800(){
+    private long[] model16_1280_800(Craft1280800Float16 model, Bitmap bmp){
 
         long[] res = new long[2];
 
-        img = Bitmap.createScaledBitmap(img, 1280, 800, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 1280, 800, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft1280800Float16 model = Craft1280800Float16.newInstance(mContext);
+//            Craft1280800Float16 model = Craft1280800Float16.newInstance(mContext);
 
-            //get the current time
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
+        //get the current time
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
 //            Log.d(TAG, "model16_1280_800: Before Inputs " + formatter.format(date));
 
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 1280, 800}, DataType.FLOAT32);
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 1280, 800}, DataType.FLOAT32);
 
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
-            ByteBuffer byteBuffer = tensorImage.getBuffer();
-            inputFeature0.loadBuffer(byteBuffer);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
 
-            //get the current time
-            SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date2 = new Date();
+        //get the current time
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
 //            Log.d(TAG, "model16_1280_800: After Inputs and Before outputs " + formatter2.format(date2));
 
-            long inputTimeDiff = date2.getTime() - date.getTime();
-            res[0] = inputTimeDiff;
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
 
-            runOnUiThread(new Runnable() {
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
-                }
-            });
+            }
+        });
 
-            // Runs model inference and gets result.
-            Craft1280800Float16.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+        // Runs model inference and gets result.
+        Craft1280800Float16.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
-            //get the current time
-            SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date3 = new Date();
+        //get the current time
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
 //            Log.d(TAG, "model16_1280_800: After outputs " + formatter3.format(date3));
 
-            long outputTimeDiff = date3.getTime() - date2.getTime();
-            res[1] = outputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long outputTimeDiff = date3.getTime() - date2.getTime();
+        res[1] = outputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
-                }
-            });
+            }
+        });
 
 //            Log.d(TAG, "onClick: output feature "+selectedModel+ " "+
 //                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
@@ -861,166 +923,154 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
-            // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model16_1280_800: Exception " + e.getMessage());
-        }
+        // Releases model resources if no longer used.
+//            model.close();
+
         return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model32_320_320(){
+    private long[] model32_320_320(Craft320320Float32 model, Bitmap bmp){
 
         long[] res = new long[2];
-        img = Bitmap.createScaledBitmap(img, 320, 320, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 320, 320, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft320320Float32 model = Craft320320Float32.newInstance(mContext);
+//            Craft320320Float32 model = Craft320320Float32.newInstance(mContext);
 
-            //get the current time
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
+        //get the current time
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
 //            Log.d(TAG, "Craft320320Float32: Before Inputs " + formatter.format(date));
 
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 320, 320}, DataType.FLOAT32);
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 320, 320}, DataType.FLOAT32);
 
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
-            ByteBuffer byteBuffer = tensorImage.getBuffer();
-            inputFeature0.loadBuffer(byteBuffer);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
 
-            //get the current time
-            SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date2 = new Date();
+        //get the current time
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
 //            Log.d(TAG, "Craft320320Float32: After Inputs and Before Outputs " + formatter2.format(date2));
-            long inputTimeDiff = date2.getTime() - date.getTime();
-            res[0] = inputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
-                }
-            });
-            // Runs model inference and gets result
-            Craft320320Float32.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
-            //get the current time
-            SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date3 = new Date();
+            }
+        });
+        // Runs model inference and gets result
+        Craft320320Float32.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+        //get the current time
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
 //            Log.d(TAG, "Craft320320Float32: After Outputs " + formatter3.format(date3));
 
 
-            long outputDiff = date3.getTime() - date2.getTime();
-            res[1] = outputDiff;
-            runOnUiThread(new Runnable() {
+        long outputDiff = date3.getTime() - date2.getTime();
+        res[1] = outputDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    outputImageTimeText.setText("outputImageTimeText " + outputDiff);
-                }
-            });
+            }
+        });
 //            Log.d(TAG, "onClick: output feature "+
 //                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 //
 //            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
-            // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model32_320_320: Exception "  + e.getMessage());
-        }
+        // Releases model resources if no longer used.
+//            model.close();
+
         return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model32_480_320(){
+    private long[] model32_480_320(Craft480320Float32 model, Bitmap bmp){
         long[] res = new long[2];
-        img = Bitmap.createScaledBitmap(img, 480, 320, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 480, 320, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft480320Float32 model = Craft480320Float32.newInstance(mContext);
+//            Craft480320Float32 model = Craft480320Float32.newInstance(mContext);
 
             //get the current time
-            SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
 //            Log.d(TAG, "Craft480320Float32: Before Inputs " + formatter.format(date));
 
-            // Creates inputs for reference.
-            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 320}, DataType.FLOAT32);
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 320}, DataType.FLOAT32);
 
-            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
-            ByteBuffer byteBuffer = tensorImage.getBuffer();
-            inputFeature0.loadBuffer(byteBuffer);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
 
-            //get the current time
-            SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date2 = new Date();
+        //get the current time
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
 //            Log.d(TAG, "Craft480320Float32: After Inputs and Before Outputs " + formatter2.format(date2));
 
-            long inputTimeDiff = date2.getTime() - date.getTime();
-            res[0] = inputTimeDiff;
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
 
-            runOnUiThread(new Runnable() {
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    inputImageTimeText.setText("InputImageTimeDifference: "+ inputTimeDiff);
-                }
-            });
-            // Runs model inference and gets result.
-            Craft480320Float32.Outputs outputs = model.process(inputFeature0);
-            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+            }
+        });
+        // Runs model inference and gets result.
+        Craft480320Float32.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
 
-            //get the current time
-            SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            Date date3 = new Date();
+        //get the current time
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
 //            Log.d(TAG, "Craft480320Float32: After Outputs " + formatter3.format(date3));
-            long outputTimeDiff = date3.getTime() - date2.getTime();
-            res[1] = outputTimeDiff;
-            runOnUiThread(new Runnable() {
+        long outputTimeDiff = date3.getTime() - date2.getTime();
+        res[1] = outputTimeDiff;
+        runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    // Stuff that updates the UI
+            @Override
+            public void run() {
+                // Stuff that updates the UI
 //                    outputImageTimeText.setText("OutputImageTimeDifference: "+ outputTimeDiff);
-                }
-            });
+            }
+        });
 //            Log.d(TAG, "onClick: output feature "+
 //                    outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 //
 //            Log.d(TAG, "onClick: length " + outputFeature0.getFloatArray().length);
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
-            // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model32_480_320: Exception " + e.getMessage());
-        }
+        // Releases model resources if no longer used.
+//            model.close();
+
         return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model32_480_480(){
+    private long[] model32_480_480(Craft480480Float32 model, Bitmap bmp){
         long[] res = new long[2];
 
-        img = Bitmap.createScaledBitmap(img, 480, 480, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 480, 480, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft480480Float32 model = Craft480480Float32.newInstance(mContext);
+//            Craft480480Float32 model = Craft480480Float32.newInstance(mContext);
 
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -1031,7 +1081,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 480, 480}, DataType.FLOAT32);
 
             TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
+            tensorImage.load(bmp);
             ByteBuffer byteBuffer = tensorImage.getBuffer();
             inputFeature0.loadBuffer(byteBuffer);
 
@@ -1077,21 +1127,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            Log.d(TAG, "model32_480_480: Exception " + e.getMessage());
-        }
+//            model.close();
+
         return res;
     }
     @SuppressLint("SetTextI18n")
-    private long[] model32_640_480(){
+    private long[] model32_640_480(Craft640480Float32 model, Bitmap bmp){
 
         long[] res = new long[2];
-        img = Bitmap.createScaledBitmap(img, 640, 480, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 640, 480, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft640480Float32 model = Craft640480Float32.newInstance(mContext);
+//            Craft640480Float32 model = Craft640480Float32.newInstance(mContext);
 
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -1102,7 +1149,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 480}, DataType.FLOAT32);
 
             TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
+            tensorImage.load(bmp);
             ByteBuffer byteBuffer = tensorImage.getBuffer();
             inputFeature0.loadBuffer(byteBuffer);
 
@@ -1150,23 +1197,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            // TODO Handle the exception
-            Log.d(TAG, "model32_640_480: Exception " + e.getMessage());
-        }
+//            model.close();
+
         return res;
 
     }
     @SuppressLint("SetTextI18n")
-    private long[] model32_640_640(){
+    private long[] model32_640_640(Craft640640Float32 model, Bitmap bmp){
         long[] res = new long[2];
 
-        img = Bitmap.createScaledBitmap(img, 640, 640, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 640, 640, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-        try {
-            Craft640640Float32 model = Craft640640Float32.newInstance(mContext);
+//            Craft640640Float32 model = Craft640640Float32.newInstance(mContext);
 
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -1177,7 +1220,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 640}, DataType.FLOAT32);
 
             TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
+            tensorImage.load(bmp);
             ByteBuffer byteBuffer = tensorImage.getBuffer();
             inputFeature0.loadBuffer(byteBuffer);
 
@@ -1225,23 +1268,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            Log.d(TAG, "model32_640_640: Exception " + e.getMessage());
-        }
+//            model.close();
+
         return res;
     }
 
     @SuppressLint("SetTextI18n")
-    private long[] model32_1280_800(){
+    private long[] model32_1280_800(Craft1280800Float32 model, Bitmap bmp){
         long[] res = new long[2];
 
-        img = Bitmap.createScaledBitmap(img, 1280, 800, true);
-        img = img.copy(Bitmap.Config.ARGB_8888, true);
+//        img = Bitmap.createScaledBitmap(img, 1280, 800, true);
+//        img = img.copy(Bitmap.Config.ARGB_8888, true);
 
-
-        try {
-            Craft1280800Float32 model = Craft1280800Float32.newInstance(mContext);
+//            Craft1280800Float32 model = Craft1280800Float32.newInstance(mContext);
 
             //get the current time
             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -1252,7 +1291,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 1280, 800}, DataType.FLOAT32);
 
             TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
-            tensorImage.load(img);
+            tensorImage.load(bmp);
             ByteBuffer byteBuffer = tensorImage.getBuffer();
             inputFeature0.loadBuffer(byteBuffer);
 
@@ -1299,10 +1338,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //            tv.setText(outputFeature0.getFloatArray()[0] + "\n"+outputFeature0.getFloatArray()[1]);
 
             // Releases model resources if no longer used.
-            model.close();
-        } catch (IOException e) {
-            Log.d(TAG, "model32_1280_800: Exception " + e.getMessage());
-        }
+//            model.close();
+
         return res;
     }
 
