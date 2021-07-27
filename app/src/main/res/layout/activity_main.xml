@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView android:layout_width="match_parent"
+    android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+<RelativeLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     tools:context=".MainActivity">
+
 
     <ProgressBar
         android:id="@+id/progressbar"
@@ -17,7 +22,7 @@
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="200dp"
         android:scaleType="fitXY"/>
     <TextView
         android:id="@+id/fetchedText"
@@ -30,7 +35,7 @@
         android:layout_marginTop="50dp"
         />
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/hardwareSpinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/btn_dropdown"
@@ -38,24 +43,40 @@
         android:layout_below="@+id/fetchedText"
         android:layout_marginTop="20dp"
         />
+    <Spinner
+        android:id="@+id/threadSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        android:layout_below="@+id/hardwareSpinner"
+        />
+    <Spinner
+        android:id="@+id/modelSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/btn_dropdown"
+        android:spinnerMode="dropdown"
+        android:layout_below="@+id/threadSpinner"
+        />
     <Button
         android:id="@+id/select_image"
         android:layout_width="wrap_content"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:text="Select"
         android:background="@color/orange"
-        android:layout_below="@+id/spinner"
-        android:layout_marginTop="20dp"
+        android:layout_below="@+id/modelSpinner"
+        android:layout_marginTop="10dp"
         android:layout_marginLeft="30dp"
         />
     <Button
         android:id="@+id/predict"
         android:layout_width="wrap_content"
-        android:layout_height="50dp"
+        android:layout_height="wrap_content"
         android:text="Predict"
         android:background="@color/orange"
-        android:layout_below="@+id/spinner"
-        android:layout_marginTop="20dp"
+        android:layout_below="@+id/modelSpinner"
+        android:layout_marginTop="10dp"
         android:layout_toRightOf="@+id/select_image"
         android:layout_marginLeft="30dp"
         />
@@ -82,3 +103,5 @@
 
 
 </RelativeLayout>
+
+</ScrollView>

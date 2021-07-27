@@ -45,6 +45,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     //tflite
     implementation 'org.tensorflow:tensorflow-lite-support:0.1.0-rc1'
-    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0-rc1'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0-rc2'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.5.0'
+
 
 }

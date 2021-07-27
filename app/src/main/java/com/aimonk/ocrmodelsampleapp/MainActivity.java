@@ -25,6 +25,9 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.tensorflow.lite.support.model.Model;
+import org.tensorflow.lite.gpu.CompatibilityList;
+import org.tensorflow.lite.gpu.GpuDelegate;
 
 import com.aimonk.ocrmodelsampleapp.ml.Craft1280800Float16;
 import com.aimonk.ocrmodelsampleapp.ml.Craft1280800Float32;
@@ -53,7 +56,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener
+public class MainActivity extends AppCompatActivity
+//        implements AdapterView.OnItemSelectedListener
 {
     private Context mContext = MainActivity.this;
     public static final int RESULT_GALLERY = 0;
@@ -63,10 +67,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private TextView tv, inputImageTimeText, outputImageTimeText;
     private Bitmap img;
     private String TAG = "MainActivity";
-    private Spinner dropdown;
+    private Spinner modelSpinner, threadSpinner, hardwareSpinner;
     private String selectedModel;
     private int positionSelected = 0;
     private ProgressBar progressBar;
+    // Initialize interpreter with GPU delegate
+    private Model.Options options;
+    private CompatibilityList compatList = new CompatibilityList();
+    private int harWareSelected = -1;//index no.
+    private int threadSelected = 0;//index no.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,16 +89,67 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         inputImageTimeText = findViewById(R.id.inputImageTimeText);
         outputImageTimeText = findViewById(R.id.outputImageTimeText);
         progressBar = findViewById(R.id.progressbar);
+        threadSpinner = findViewById(R.id.threadSpinner);
+        hardwareSpinner = findViewById(R.id.hardwareSpinner);
+        modelSpinner = findViewById(R.id.modelSpinner);
+//        threadSpinner.setVisibility(View.INVISIBLE);
 
-        dropdown = findViewById(R.id.spinner);
-        String[] items = new String[]{"Float16_320_320", "Float16_480_320", "Float16_480_480", "Float16_640_480",
+        //hardware spinner
+        String[] hardwareItems = new String[]{"CPU DELEGATE", "GPU DELEGATE", "NNAPI DELEGATE", };
+        ArrayAdapter<String> adapterHardware = new ArrayAdapter<>(this, android.R.layout
+                .simple_spinner_dropdown_item, hardwareItems);
+        hardwareSpinner.setAdapter(adapterHardware);
+        hardwareSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                harWareSelected = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        //thread spinner
+        String[] threadItems = new String[]{"1", "2", "3", "4",};
+        ArrayAdapter<String> threadAdapter = new ArrayAdapter<>(this, android.R.layout
+                .simple_spinner_dropdown_item, threadItems);
+        threadSpinner.setAdapter(threadAdapter);
+        threadSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if (harWareSelected ==0){
+                    threadSelected = position;
+                }else{
+                    Toast.makeText(mContext, "Please select Cpu first", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        String[] modelItems = new String[]{"Float16_320_320", "Float16_480_320", "Float16_480_480", "Float16_640_480",
                 "Float16_640_640", "Float16_1280_800",
                 "Float32_320_320", "Float32_480_320", "Float32_480_480", "Float32_640_480",
                 "Float32_640_640", "Float32_1280_800",};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout
-                .simple_spinner_dropdown_item, items);
-        dropdown.setAdapter(adapter);
-        dropdown.setOnItemSelectedListener(this);
+        ArrayAdapter<String> modelAdapter = new ArrayAdapter<>(this, android.R.layout
+                .simple_spinner_dropdown_item, modelItems);
+        modelSpinner.setAdapter(modelAdapter);
+        modelSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                positionSelected = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         select.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,7 +171,38 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private void predictText() throws IOException {
-        Log.d(TAG, "predictText: Position Selected " + positionSelected);
+//        Log.d(TAG, "predictText: Position Selected " + positionSelected);
+
+//        if(compatList.isDelegateSupportedOnThisDevice()){
+////             if the device has a supported GPU, add the GPU delegate
+//            options = new Model.Options.Builder().setDevice(Model.Device.GPU).build();
+//            Log.d(TAG, "predictText: Run on GPU ");
+//        } else {
+//            // if the GPU is not supported, run on 4 threads
+//            options = new Model.Options.Builder().setNumThreads(4).build();
+//            Log.d(TAG, "predictText: Run on CPU with 4 threads");
+//        }
+        if (harWareSelected == 0){
+            int noOfThread = threadSelected+1;
+            Log.d(TAG, "predictText: Runs on Cpu with noOfThreads " + noOfThread);
+            options = new Model.Options.Builder().setNumThreads(noOfThread).build();
+        }else if (harWareSelected == 1 ){
+            try{
+                Log.d(TAG, "predictText: Runs on GPU ");
+                options = new Model.Options.Builder().setDevice(Model.Device.GPU).build();
+            }catch(Exception e ){
+                Log.d(TAG, "predictText: gpu Failed: Error " + e.getMessage());
+            }
+
+        }else if(harWareSelected == 2){
+            try{
+                Log.d(TAG, "predictText: Runs on NNAPI ");
+                options = new Model.Options.Builder().setDevice(Model.Device.NNAPI).build();
+            }catch(Exception e ){
+                Log.d(TAG, "predictText: gpu Failed: Error " + e.getMessage());
+            }
+        }
+
         ArrayList<ArrayList<long[]>> resArr = new ArrayList<>();
         switch (positionSelected) {
             case 0:
@@ -120,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp0 = Bitmap.createScaledBitmap(img, 320, 320, true);
                 bmp0 = bmp0.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft320320Float16 model = Craft320320Float16.newInstance(mContext);
+                Craft320320Float16 model = Craft320320Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr0.add(model16_320_320(model, bmp0));
@@ -136,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp1 = Bitmap.createScaledBitmap(img, 480, 320, true);
                 bmp1 = bmp1.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft480320Float16 model1 = Craft480320Float16.newInstance(mContext);
+                Craft480320Float16 model1 = Craft480320Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr1.add(model16_480_320(model1, bmp1));
@@ -153,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp2 = Bitmap.createScaledBitmap(img, 480, 480, true);
                 bmp2 = bmp2.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft480480Float16 model2 = Craft480480Float16.newInstance(mContext);
+                Craft480480Float16 model2 = Craft480480Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr2.add(model16_480_480(model2, bmp2));
@@ -169,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp3 = Bitmap.createScaledBitmap(img, 640, 480, true);
                 bmp3 = bmp3.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft640480Float16 model3 = Craft640480Float16.newInstance(mContext);
+                Craft640480Float16 model3 = Craft640480Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr3.add(model16_640_480(model3, bmp3));
@@ -184,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp4 = Bitmap.createScaledBitmap(img, 640, 640, true);
                 bmp4 = bmp4.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft640640Float16 model4 = Craft640640Float16.newInstance(mContext);
+                Craft640640Float16 model4 = Craft640640Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr4.add(model16_640_640(model4, bmp4));
@@ -199,7 +290,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp5 = Bitmap.createScaledBitmap(img, 1280, 800, true);
                 bmp5 = bmp5.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft1280800Float16 model5 = Craft1280800Float16.newInstance(mContext);
+                Craft1280800Float16 model5 = Craft1280800Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr5.add(model16_1280_800(model5, bmp5));
@@ -214,7 +305,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp6 = Bitmap.createScaledBitmap(img, 320, 320, true);
                 bmp6 = bmp6.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft320320Float32 model6 = Craft320320Float32.newInstance(mContext);
+                Craft320320Float32 model6 = Craft320320Float32.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr6.add(model32_320_320(model6, bmp6));
@@ -230,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp7 = Bitmap.createScaledBitmap(img, 480, 320, true);
                 bmp7 = bmp7.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft480320Float32 model7 = Craft480320Float32.newInstance(mContext);
+                Craft480320Float32 model7 = Craft480320Float32.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr7.add(model32_480_320(model7, bmp7));
@@ -246,7 +337,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp8 = Bitmap.createScaledBitmap(img, 480, 480, true);
                 bmp8 = bmp8.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft480480Float32 model8 = Craft480480Float32.newInstance(mContext);
+                Craft480480Float32 model8 = Craft480480Float32.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr8.add(model32_480_480(model8, bmp8));
@@ -261,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp9 = Bitmap.createScaledBitmap(img, 640, 480, true);
                 bmp9 = bmp9.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft640480Float32 model9 = Craft640480Float32.newInstance(mContext);
+                Craft640480Float32 model9 = Craft640480Float32.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr9.add(model32_640_480(model9, bmp9));
@@ -277,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp10 = Bitmap.createScaledBitmap(img, 640, 640, true);
                 bmp10 = bmp10.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft640640Float32 model10 = Craft640640Float32.newInstance(mContext);
+                Craft640640Float32 model10 = Craft640640Float32.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr10.add(model32_640_640(model10, bmp10));
@@ -292,7 +383,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp11 = Bitmap.createScaledBitmap(img, 1280, 800, true);
                 bmp11 = bmp11.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft1280800Float32 model11 = Craft1280800Float32.newInstance(mContext);
+                Craft1280800Float32 model11 = Craft1280800Float32.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr11.add(model32_1280_800(model11, bmp11));
@@ -308,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Bitmap bmp12 = Bitmap.createScaledBitmap(img, 320, 320, true);
                 bmp12 = bmp12.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft320320Float16 model12 = Craft320320Float16.newInstance(mContext);
+                Craft320320Float16 model12 = Craft320320Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
                     arr12.add(model16_320_320(model12, bmp12));
@@ -456,13 +547,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            Log.d("MonkVision", "in PreExecute ");
+//            Log.d("MonkVision", "in PreExecute ");
             progressDialog = new ProgressDialog(context);
             progressDialog.setTitle("Please wait...");
             progressDialog.setMessage("Creating pdf...");
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             progressDialog.setIndeterminate(false);
-            progressDialog.setMax(100);
+            progressDialog.setMax(16);
             progressDialog.setCancelable(false);
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
@@ -486,7 +577,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
 
-            Log.d("scanner", "in onProgresUpdate ");
+//            Log.d("scanner", "in onProgresUpdate ");
 
             this.progressDialog.setProgress(((values[0] + 1) * 100) / 2);
             StringBuilder sb = new StringBuilder();
@@ -1343,13 +1434,4 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         return res;
     }
 
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        positionSelected = position;
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
-    }
 }
