@@ -41,12 +41,15 @@ import com.aimonk.ocrmodelsampleapp.ml.Craft640480Float16;
 import com.aimonk.ocrmodelsampleapp.ml.Craft640480Float32;
 import com.aimonk.ocrmodelsampleapp.ml.Craft640640Float16;
 import com.aimonk.ocrmodelsampleapp.ml.Craft640640Float32;
+import com.aimonk.ocrmodelsampleapp.ml.YoloCraft640480Float16;
+import com.aimonk.ocrmodelsampleapp.ml.YoloCraft640640Float16;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.ByteBuffer;
@@ -102,7 +105,17 @@ public class MainActivity extends AppCompatActivity
         hardwareSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
                 harWareSelected = position;
+                if(harWareSelected == 1 || harWareSelected == 2){
+                    if(!compatList.isDelegateSupportedOnThisDevice()){
+                        Toast.makeText(mContext, "Gpu Not supported, choose different hardware",
+                                Toast.LENGTH_SHORT).show();
+                        harWareSelected = 0;
+                    }else{
+                        Toast.makeText(mContext, "Hurray, your device supports GPU", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
 
             @Override
@@ -133,9 +146,9 @@ public class MainActivity extends AppCompatActivity
         });
 
         String[] modelItems = new String[]{"Float16_320_320", "Float16_480_320", "Float16_480_480", "Float16_640_480",
-                "Float16_640_640", "Float16_1280_800",
-                "Float32_320_320", "Float32_480_320", "Float32_480_480", "Float32_640_480",
-                "Float32_640_640", "Float32_1280_800",};
+                "Float16_640_640", "Float16_1280_800", "YoloCraft_640_480", "YoloCraft_640_640"};
+//                "Float32_320_320", "Float32_480_320", "Float32_480_480", "Float32_640_480",
+//                "Float32_640_640", "Float32_1280_800",};
         ArrayAdapter<String> modelAdapter = new ArrayAdapter<>(this, android.R.layout
                 .simple_spinner_dropdown_item, modelItems);
         modelSpinner.setAdapter(modelAdapter);
@@ -162,10 +175,13 @@ public class MainActivity extends AppCompatActivity
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
-                new AsyncPredictData(mContext).execute();
-                progressBar.setVisibility(View.GONE);
-
+//                progressBar.setVisibility(View.VISIBLE);
+//                new AsyncPredictData(mContext).execute();
+                try {
+                    predictText();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -187,19 +203,24 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "predictText: Runs on Cpu with noOfThreads " + noOfThread);
             options = new Model.Options.Builder().setNumThreads(noOfThread).build();
         }else if (harWareSelected == 1 ){
-            try{
-                Log.d(TAG, "predictText: Runs on GPU ");
+            Log.d(TAG, "predictText: Runs on GPU ");
+            if(!compatList.isDelegateSupportedOnThisDevice()){
+                Toast.makeText(mContext, "Gpu Not supported, Switch to cpu",
+                        Toast.LENGTH_SHORT).show();
+                options = new Model.Options.Builder().setNumThreads(threadSelected+1).build();
+            }else{
+                Toast.makeText(mContext, "Hurray, your device supports GPU", Toast.LENGTH_SHORT).show();
                 options = new Model.Options.Builder().setDevice(Model.Device.GPU).build();
-            }catch(Exception e ){
-                Log.d(TAG, "predictText: gpu Failed: Error " + e.getMessage());
             }
-
         }else if(harWareSelected == 2){
-            try{
-                Log.d(TAG, "predictText: Runs on NNAPI ");
+            Log.d(TAG, "predictText: Runs on NNAPI ");
+            if(!compatList.isDelegateSupportedOnThisDevice()){
+                Toast.makeText(mContext, "NNAPI Not supported, Switch to cpu",
+                        Toast.LENGTH_SHORT).show();
+                options = new Model.Options.Builder().setNumThreads(threadSelected+1).build();
+            }else{
+                Toast.makeText(mContext, "Hurray, your device supports GPU", Toast.LENGTH_SHORT).show();
                 options = new Model.Options.Builder().setDevice(Model.Device.NNAPI).build();
-            }catch(Exception e ){
-                Log.d(TAG, "predictText: gpu Failed: Error " + e.getMessage());
             }
         }
 
@@ -301,99 +322,124 @@ public class MainActivity extends AppCompatActivity
                 selectedModel = "16-1280*800";
                 break;
             case 6:
+                Toast.makeText(mContext, "No Model Available here", Toast.LENGTH_SHORT).show();
                 ArrayList<long[]> arr6 = new ArrayList<>();
-                Bitmap bmp6 = Bitmap.createScaledBitmap(img, 320, 320, true);
+                Bitmap bmp6 = Bitmap.createScaledBitmap(img, 640, 480, true);
                 bmp6 = bmp6.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft320320Float32 model6 = Craft320320Float32.newInstance(mContext, options);
+                YoloCraft640480Float16 model6 = YoloCraft640480Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
-                    arr6.add(model32_320_320(model6, bmp6));
+                    arr6.add(modelYolo640480(model6, bmp6));
                 }
                 model6.close();
                 resArr.add(arr6);
-//                Toast.makeText(mContext, "Float 32 - 320*320 Selected", Toast.LENGTH_SHORT).show();
-                selectedModel = "32-320*320";
+//                ArrayList<long[]> arr6 = new ArrayList<>();
+//                Bitmap bmp6 = Bitmap.createScaledBitmap(img, 320, 320, true);
+//                bmp6 = bmp6.copy(Bitmap.Config.ARGB_8888, true);
+//
+//                Craft320320Float32 model6 = Craft320320Float32.newInstance(mContext, options);
+//
+//                for (int i = 0; i< 16; i++){
+//                    arr6.add(model32_320_320(model6, bmp6));
+//                }
+//                model6.close();
+//                resArr.add(arr6);
+////                Toast.makeText(mContext, "Float 32 - 320*320 Selected", Toast.LENGTH_SHORT).show();
+                selectedModel = "YOLO-640_480";
 
                 break;
             case 7:
+
+                Toast.makeText(mContext, "No Model Available here", Toast.LENGTH_SHORT).show();
                 ArrayList<long[]> arr7 = new ArrayList<>();
-                Bitmap bmp7 = Bitmap.createScaledBitmap(img, 480, 320, true);
+                Bitmap bmp7 = Bitmap.createScaledBitmap(img, 640, 640, true);
                 bmp7 = bmp7.copy(Bitmap.Config.ARGB_8888, true);
 
-                Craft480320Float32 model7 = Craft480320Float32.newInstance(mContext, options);
+                YoloCraft640640Float16 model7 = YoloCraft640640Float16.newInstance(mContext, options);
 
                 for (int i = 0; i< 16; i++){
-                    arr7.add(model32_480_320(model7, bmp7));
+                    arr7.add(modelYolo640640(model7, bmp7));
                 }
                 model7.close();
                 resArr.add(arr7);
-//                Toast.makeText(mContext, "Float 32 - 480*320 Selected", Toast.LENGTH_SHORT).show();
-                selectedModel = "32-480*320";
+//                ArrayList<long[]> arr7 = new ArrayList<>();
+//                Bitmap bmp7 = Bitmap.createScaledBitmap(img, 480, 320, true);
+//                bmp7 = bmp7.copy(Bitmap.Config.ARGB_8888, true);
+//
+//                Craft480320Float32 model7 = Craft480320Float32.newInstance(mContext, options);
+//
+//                for (int i = 0; i< 16; i++){
+//                    arr7.add(model32_480_320(model7, bmp7));
+//                }
+//                model7.close();
+//                resArr.add(arr7);
+////                Toast.makeText(mContext, "Float 32 - 480*320 Selected", Toast.LENGTH_SHORT).show();
+                selectedModel = "Yolo_640_640";
                 // Whatever you want to happen when the third item gets selected
                 break;
-            case 8:
-                ArrayList<long[]> arr8 = new ArrayList<>();
-                Bitmap bmp8 = Bitmap.createScaledBitmap(img, 480, 480, true);
-                bmp8 = bmp8.copy(Bitmap.Config.ARGB_8888, true);
-
-                Craft480480Float32 model8 = Craft480480Float32.newInstance(mContext, options);
-
-                for (int i = 0; i< 16; i++){
-                    arr8.add(model32_480_480(model8, bmp8));
-                }
-                model8.close();
-                resArr.add(arr8);
-//                Toast.makeText(mContext, "Float 32 - 480*480 Selected", Toast.LENGTH_SHORT).show();
-                selectedModel = "32-480*480";
-                break;
-            case 9:
-                ArrayList<long[]> arr9 = new ArrayList<>();
-                Bitmap bmp9 = Bitmap.createScaledBitmap(img, 640, 480, true);
-                bmp9 = bmp9.copy(Bitmap.Config.ARGB_8888, true);
-
-                Craft640480Float32 model9 = Craft640480Float32.newInstance(mContext, options);
-
-                for (int i = 0; i< 16; i++){
-                    arr9.add(model32_640_480(model9, bmp9));
-                }
-                model9.close();
-                resArr.add(arr9);
-//                Toast.makeText(mContext, "Float 32 - 640*480 Selected", Toast.LENGTH_SHORT).show();
-                selectedModel = "32-640*480";
-                // Whatever you want to happen when the third item gets selected
-                break;
-            case 10:
-                ArrayList<long[]> arr10 = new ArrayList<>();
-                Bitmap bmp10 = Bitmap.createScaledBitmap(img, 640, 640, true);
-                bmp10 = bmp10.copy(Bitmap.Config.ARGB_8888, true);
-
-                Craft640640Float32 model10 = Craft640640Float32.newInstance(mContext, options);
-
-                for (int i = 0; i< 16; i++){
-                    arr10.add(model32_640_640(model10, bmp10));
-                }
-                model10.close();
-                resArr.add(arr10);
-//                Toast.makeText(mContext, "Float 32 - 640*640 Selected", Toast.LENGTH_SHORT).show();
-                selectedModel = "32-640*640";
-                break;
-            case 11:
-                ArrayList<long[]> arr11 = new ArrayList<>();
-                Bitmap bmp11 = Bitmap.createScaledBitmap(img, 1280, 800, true);
-                bmp11 = bmp11.copy(Bitmap.Config.ARGB_8888, true);
-
-                Craft1280800Float32 model11 = Craft1280800Float32.newInstance(mContext, options);
-
-                for (int i = 0; i< 16; i++){
-                    arr11.add(model32_1280_800(model11, bmp11));
-                }
-                model11.close();
-                resArr.add(arr11);
-//                Toast.makeText(mContext, "Float 32 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
-                selectedModel = "32-1280*800";
-                // Whatever you want to happen when the third item gets selected
-                break;
+//            case 8:
+//                ArrayList<long[]> arr8 = new ArrayList<>();
+//                Bitmap bmp8 = Bitmap.createScaledBitmap(img, 480, 480, true);
+//                bmp8 = bmp8.copy(Bitmap.Config.ARGB_8888, true);
+//
+//                Craft480480Float32 model8 = Craft480480Float32.newInstance(mContext, options);
+//
+//                for (int i = 0; i< 16; i++){
+//                    arr8.add(model32_480_480(model8, bmp8));
+//                }
+//                model8.close();
+//                resArr.add(arr8);
+////                Toast.makeText(mContext, "Float 32 - 480*480 Selected", Toast.LENGTH_SHORT).show();
+//                selectedModel = "32-480*480";
+//                break;
+//            case 9:
+//                ArrayList<long[]> arr9 = new ArrayList<>();
+//                Bitmap bmp9 = Bitmap.createScaledBitmap(img, 640, 480, true);
+//                bmp9 = bmp9.copy(Bitmap.Config.ARGB_8888, true);
+//
+//                Craft640480Float32 model9 = Craft640480Float32.newInstance(mContext, options);
+//
+//                for (int i = 0; i< 16; i++){
+//                    arr9.add(model32_640_480(model9, bmp9));
+//                }
+//                model9.close();
+//                resArr.add(arr9);
+////                Toast.makeText(mContext, "Float 32 - 640*480 Selected", Toast.LENGTH_SHORT).show();
+//                selectedModel = "32-640*480";
+//                // Whatever you want to happen when the third item gets selected
+//                break;
+//            case 10:
+//                ArrayList<long[]> arr10 = new ArrayList<>();
+//                Bitmap bmp10 = Bitmap.createScaledBitmap(img, 640, 640, true);
+//                bmp10 = bmp10.copy(Bitmap.Config.ARGB_8888, true);
+//
+//                Craft640640Float32 model10 = Craft640640Float32.newInstance(mContext, options);
+//
+//                for (int i = 0; i< 16; i++){
+//                    arr10.add(model32_640_640(model10, bmp10));
+//                }
+//                model10.close();
+//                resArr.add(arr10);
+////                Toast.makeText(mContext, "Float 32 - 640*640 Selected", Toast.LENGTH_SHORT).show();
+//                selectedModel = "32-640*640";
+//                break;
+//            case 11:
+//                ArrayList<long[]> arr11 = new ArrayList<>();
+//                Bitmap bmp11 = Bitmap.createScaledBitmap(img, 1280, 800, true);
+//                bmp11 = bmp11.copy(Bitmap.Config.ARGB_8888, true);
+//
+//                Craft1280800Float32 model11 = Craft1280800Float32.newInstance(mContext, options);
+//
+//                for (int i = 0; i< 16; i++){
+//                    arr11.add(model32_1280_800(model11, bmp11));
+//                }
+//                model11.close();
+//                resArr.add(arr11);
+////                Toast.makeText(mContext, "Float 32 - 1280*800 Selected", Toast.LENGTH_SHORT).show();
+//                selectedModel = "32-1280*800";
+//                // Whatever you want to happen when the third item gets selected
+//                break;
             default:
                 ArrayList<long[]> arr12 = new ArrayList<>();
                 Bitmap bmp12 = Bitmap.createScaledBitmap(img, 320, 320, true);
@@ -436,13 +482,12 @@ public class MainActivity extends AppCompatActivity
                 // Stuff that updates the UI
                 inputImageTimeText.setText("MeanInputImageTimeDifference: "+ meanInputTime);
                 outputImageTimeText.setText("MeanOutputImageTimeDifference: " + meanOutputTime);
+                Log.d(TAG, "Model " + selectedModel  + "predictText: Mean of time to Input Image  "
+                        + meanInputTime + " Mean of time to Output Image " + meanOutputTime);
+//                writeLogs("selectedModel " + selectedModel + "\n" + "MeanInputImageTimeDifference: " +
+//                        meanInputTime + "\n" +  " MeanOutputImageTimeDifference: " + meanOutputTime);
             }
         });
-        Log.d(TAG, "Model " + selectedModel  + "predictText: Mean of time to Input Image  "
-                + meanInputTime + " Mean of time to Output Image " + meanOutputTime);
-        writeLogs("selectedModel " + selectedModel + "\n" + "MeanInputImageTimeDifference: " +
-                meanInputTime + "\n" +  " MeanOutputImageTimeDifference: " + meanOutputTime);
-
     }
 
     private void writeLogs(String data){
@@ -550,10 +595,10 @@ public class MainActivity extends AppCompatActivity
 //            Log.d("MonkVision", "in PreExecute ");
             progressDialog = new ProgressDialog(context);
             progressDialog.setTitle("Please wait...");
-            progressDialog.setMessage("Creating pdf...");
+            progressDialog.setMessage("Predicting Mean Time...");
             progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             progressDialog.setIndeterminate(false);
-            progressDialog.setMax(16);
+            progressDialog.setMax(100);
             progressDialog.setCancelable(false);
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
@@ -564,6 +609,8 @@ public class MainActivity extends AppCompatActivity
 
             try {
                 predictText();
+
+                publishProgress(100);
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.d(TAG, "doInBackground: Exception " + e.getMessage());
@@ -579,14 +626,7 @@ public class MainActivity extends AppCompatActivity
 
 //            Log.d("scanner", "in onProgresUpdate ");
 
-            this.progressDialog.setProgress(((values[0] + 1) * 100) / 2);
-            StringBuilder sb = new StringBuilder();
-            sb.append("Processing images (");
-            sb.append(values[0] + 1);
-            sb.append("/");
-            sb.append(10);
-            sb.append(")");
-            progressDialog.setTitle(sb.toString());
+            this.progressDialog.setProgress(values[0]);
         }
 
         @Override
@@ -596,6 +636,73 @@ public class MainActivity extends AppCompatActivity
 
             progressDialog.dismiss();
         }
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    private long[] modelYolo640480(YoloCraft640480Float16 model, Bitmap bmp) {
+
+        long[] res = new long[2];
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
+//            Log.d(TAG, "model16_320_320: Before InputFeature" + formatter.format(date));
+
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 480}, DataType.FLOAT32);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
+
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
+//            Log.d(TAG, "model16_320_320: After InputFeature and Before Outputs " + formatter2.format(date2));
+
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
+
+        // Runs model inference and gets result.
+        YoloCraft640480Float16.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
+        long outputTimeDiff = date3.getTime() - date2.getTime();
+        res[1] = outputTimeDiff;
+        return res;
+    }
+
+    @SuppressLint("SetTextI18n")
+    private long[] modelYolo640640(YoloCraft640640Float16 model, Bitmap bmp) {
+
+        long[] res = new long[2];
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date = new Date();
+//            Log.d(TAG, "model16_320_320: Before InputFeature" + formatter.format(date));
+
+        // Creates inputs for reference.
+        TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 3, 640, 480}, DataType.FLOAT32);
+        TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+        tensorImage.load(bmp);
+        ByteBuffer byteBuffer = tensorImage.getBuffer();
+        inputFeature0.loadBuffer(byteBuffer);
+
+        SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date2 = new Date();
+//            Log.d(TAG, "model16_320_320: After InputFeature and Before Outputs " + formatter2.format(date2));
+
+        long inputTimeDiff = date2.getTime() - date.getTime();
+        res[0] = inputTimeDiff;
+
+        // Runs model inference and gets result.
+        YoloCraft640640Float16.Outputs outputs = model.process(inputFeature0);
+        TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+
+        SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        Date date3 = new Date();
+        long outputTimeDiff = date3.getTime() - date2.getTime();
+        res[1] = outputTimeDiff;
+        return res;
     }
 
     @SuppressLint("SetTextI18n")
@@ -898,6 +1005,7 @@ public class MainActivity extends AppCompatActivity
         ByteBuffer byteBuffer = tensorImage.getBuffer();
         inputFeature0.loadBuffer(byteBuffer);
 
+//        writeInputData(inputFeature0.getFloatArray());
         //get the current time
         SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date2 = new Date();
@@ -906,18 +1014,17 @@ public class MainActivity extends AppCompatActivity
 
         long inputTimeDiff = date2.getTime() - date.getTime();
         res[0] = inputTimeDiff;
-        runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                // Stuff that updates the UI
-//                    inputImageTimeText.setText("InputImageTimeText " + inputTimeDiff);
-            }
-        });
 
         // Runs model inference and gets result.
         Craft640640Float16.Outputs outputs = model.process(inputFeature0);
         TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+
+//        for (int j = 0; j< outputArr.length; j++){
+//
+//            Log.d(TAG, "model16_640_640: outputArr " + outputArr[j] + "\n");
+//        }
+//        writeOutputData(outputFeature0.getFloatArray());
+//        Log.d(TAG, "model16_640_640: OutputArr length " + outputArr.length);
 
         //get the current time
         SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
@@ -946,6 +1053,82 @@ public class MainActivity extends AppCompatActivity
 //        model.close();
 
         return res;
+    }
+
+
+    private void writeInputData(float[] inputArr) {
+        StringBuilder outPutString = new StringBuilder();
+        Log.d(TAG, "writeDataInFile: Start");
+        for (int j = 0; j<inputArr.length; j++){
+            outPutString.append(inputArr[j]).append("\n");
+        }
+
+        // Get the directory for the user's public pictures directory.
+        String path =
+                getExternalFilesDir(null) + File.separator  + "TezzScanner";
+
+        // Create the folder.
+        File folder = new File(path);
+        folder.mkdirs();
+
+        // Create the file.
+        File file = new File(folder, "inputConfig.txt");
+
+        try
+        {
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(outPutString);
+
+            myOutWriter.close();
+
+            fOut.flush();
+            fOut.close();
+        }
+        catch (IOException e)
+        {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+
+    }
+
+
+    private void writeOutputData(float[] outputArr) {
+        StringBuilder outPutString = new StringBuilder();
+        Log.d(TAG, "writeDataInFile: Start");
+        for (int j = 0; j<outputArr.length; j++){
+            outPutString.append(outputArr[j]).append("\n");
+        }
+
+        // Get the directory for the user's public pictures directory.
+        String path =
+                getExternalFilesDir(null) + File.separator  + "TezzScanner";
+
+        // Create the folder.
+        File folder = new File(path);
+        folder.mkdirs();
+
+        // Create the file.
+        File file = new File(folder, "outputConfig.txt");
+
+        try
+        {
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(outPutString);
+
+            myOutWriter.close();
+
+            fOut.flush();
+            fOut.close();
+        }
+        catch (IOException e)
+        {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+
     }
 
     @SuppressLint("SetTextI18n")
@@ -1435,3 +1618,4 @@ public class MainActivity extends AppCompatActivity
     }
 
 }
+
