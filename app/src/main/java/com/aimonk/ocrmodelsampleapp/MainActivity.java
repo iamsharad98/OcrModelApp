@@ -25,6 +25,10 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.tensorflow.lite.support.model.Model;
 import org.tensorflow.lite.gpu.CompatibilityList;
 import org.tensorflow.lite.gpu.GpuDelegate;
@@ -40,6 +44,7 @@ import com.aimonk.ocrmodelsampleapp.ml.Craft480480Float32;
 import com.aimonk.ocrmodelsampleapp.ml.Craft640480Float16;
 import com.aimonk.ocrmodelsampleapp.ml.Craft640480Float32;
 import com.aimonk.ocrmodelsampleapp.ml.Craft640640Float16;
+import com.aimonk.ocrmodelsampleapp.ml.Craft640640Float16Transpose;
 import com.aimonk.ocrmodelsampleapp.ml.Craft640640Float32;
 import com.aimonk.ocrmodelsampleapp.ml.YoloCraft640480Float16;
 import com.aimonk.ocrmodelsampleapp.ml.YoloCraft640640Float16;
@@ -62,6 +67,8 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity
 //        implements AdapterView.OnItemSelectedListener
 {
+
+
     private Context mContext = MainActivity.this;
     public static final int RESULT_GALLERY = 0;
 
@@ -80,10 +87,17 @@ public class MainActivity extends AppCompatActivity
     private int harWareSelected = -1;//index no.
     private int threadSelected = 0;//index no.
 
+
+//    static {
+//        System.loadLibrary("native-lib");
+////        Log.d(TAG, "static initializer: Open CV load successfully");
+//    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        System.loadLibrary("native-lib");
 
         imgView = (ImageView) findViewById(R.id.image_view);
         tv = (TextView) findViewById(R.id.fetchedText);
@@ -184,6 +198,13 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+//        Mat image = new Mat();
+//        Bitmap bmp32 = tempBitmap.copy(Bitmap.Config.ARGB_8888, true);
+//        Utils.bitmapToMat(bmp32, image);
+//        float[][] points =  getPointsFromJNI(image.getNativeObjAddr());
+
+
     }
 
     private void predictText() throws IOException {
@@ -295,6 +316,7 @@ public class MainActivity extends AppCompatActivity
                 ArrayList<long[]> arr4 = new ArrayList<>();
                 Bitmap bmp4 = Bitmap.createScaledBitmap(img, 640, 640, true);
                 bmp4 = bmp4.copy(Bitmap.Config.ARGB_8888, true);
+//                img = img.copy(Bitmap.Config.ARGB_8888, true);
 
                 Craft640640Float16 model4 = Craft640640Float16.newInstance(mContext, options);
 
@@ -303,6 +325,8 @@ public class MainActivity extends AppCompatActivity
                 }
                 model4.close();
                 resArr.add(arr4);
+//                model16_640_640Transpose();
+
 //                Toast.makeText(mContext, "Float 16 - 640*640 Selected", Toast.LENGTH_SHORT).show();
                 selectedModel = "16-640*640";
                 break;
@@ -581,6 +605,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public native float[] textDetector(float[] output);
+//    public native String stringFromJNI();
+
     public class AsyncPredictData extends AsyncTask<String, Integer, String> {
         Context context;
         ProgressDialog progressDialog;
@@ -638,6 +665,35 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+    private void model16_640_640Transpose() {
+//        Bitmap bmp6 = Bitmap.createScaledBitmap(img, 640, 640, true);
+        img = img.copy(Bitmap.Config.ARGB_8888, true);
+
+        try {
+            Craft640640Float16Transpose model = Craft640640Float16Transpose.newInstance(mContext);
+
+            // Creates inputs for reference.
+            TensorBuffer inputFeature0 = TensorBuffer.createFixedSize(new int[]{1, 640, 640, 3}, DataType.FLOAT32);
+            TensorImage tensorImage = new TensorImage(DataType.FLOAT32);
+            tensorImage.load(img);
+            ByteBuffer byteBuffer = tensorImage.getBuffer();
+            inputFeature0.loadBuffer(byteBuffer);
+
+            writeInputData(inputFeature0.getFloatArray());
+
+            // Runs model inference and gets result.
+            Craft640640Float16Transpose.Outputs outputs = model.process(inputFeature0);
+            TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+            outputFeature0.getFloatArray();
+
+            writeOutputData(outputFeature0.getFloatArray());
+            // Releases model resources if no longer used.
+            model.close();
+        } catch (IOException e) {
+            // TODO Handle the exception
+        }
+    }
 
     @SuppressLint("SetTextI18n")
     private long[] modelYolo640480(YoloCraft640480Float16 model, Bitmap bmp) {
@@ -744,6 +800,29 @@ public class MainActivity extends AppCompatActivity
         // Runs model inference and gets result.
         Craft320320Float16.Outputs outputs = model.process(inputFeature0);
         TensorBuffer outputFeature0 = outputs.getOutputFeature0AsTensorBuffer();
+
+        Log.d(TAG, "model16_320_320: Before text Detection");
+
+//        int height = 320;
+//        int width = 320;
+//        int row = 0;
+//        int col = 0;
+//        Mat imgf = new Mat(height, width, CvType.CV_32FC2);
+//        imgf.put( row, col, outputFeature0.getFloatArray() );
+//
+//        float[][] points =  textDetector(imgf.getNativeObjAddr());
+//        for(int i = 0; i< points.length; i++){
+//            for(int j = 0; j<points[0].length; j++){
+//                Log.d(TAG, "model16_320_320: points " + points[i][j]);
+//            }
+//        }
+//        Log.d(TAG, "model16_320_320: points " + points.length);
+        float[] points = textDetector(outputFeature0.getFloatArray());
+        Log.d(TAG, "model16_320_320: points length " + points.length);
+//        stringFromJNI();
+
+
+        Log.d(TAG, "model16_320_320: After text Detection");
 
         SimpleDateFormat formatter3 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date3 = new Date();
@@ -1005,7 +1084,7 @@ public class MainActivity extends AppCompatActivity
         ByteBuffer byteBuffer = tensorImage.getBuffer();
         inputFeature0.loadBuffer(byteBuffer);
 
-//        writeInputData(inputFeature0.getFloatArray());
+        writeInputData(inputFeature0.getFloatArray());
         //get the current time
         SimpleDateFormat formatter2 = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         Date date2 = new Date();
@@ -1023,7 +1102,7 @@ public class MainActivity extends AppCompatActivity
 //
 //            Log.d(TAG, "model16_640_640: outputArr " + outputArr[j] + "\n");
 //        }
-//        writeOutputData(outputFeature0.getFloatArray());
+        writeOutputData(outputFeature0.getFloatArray());
 //        Log.d(TAG, "model16_640_640: OutputArr length " + outputArr.length);
 
         //get the current time

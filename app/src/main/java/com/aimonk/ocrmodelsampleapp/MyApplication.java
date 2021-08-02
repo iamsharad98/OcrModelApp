@@ -3,6 +3,8 @@ package com.aimonk.ocrmodelsampleapp;
 import android.app.Application;
 import android.os.Environment;
 
+import org.opencv.android.OpenCVLoader;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -13,6 +15,7 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         writeLogs();
+        OpenCVLoader.initDebug();
     }
 
     private void writeLogs(){

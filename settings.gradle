@@ -1,2 +1,4 @@
 include ':app'
 rootProject.name = "OcrModelSampleApp"
+include ':openCV'
+project(':openCV').projectDir = new File(opencvsdk + '/sdk')
